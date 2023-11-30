@@ -1,0 +1,2 @@
+#!/bin/bash
+cat bench_results/benches_*.json | cargo bench_table

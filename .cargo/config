@@ -1,0 +1,3 @@
+[alias]
+scaffold = "run --bin scaffold -- "
+bench_table = "run --bin format_bench -- "
