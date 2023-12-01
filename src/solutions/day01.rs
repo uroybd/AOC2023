@@ -2,37 +2,25 @@ use std::fs;
 use regex::Regex;
 
 // Advent of Code 2022 - Day 01
-fn get_calibration_value(val: &str) -> u32 {
-    const RADIX: u32 = 10;
-    let mut first_val: Option<u32> = None;
-    let mut last_val: Option<u32> = None;
-    
-    for c in val.chars() {
-        if let Some(v) = c.to_digit(RADIX) {
-            if first_val.is_none() {
-                first_val = Some(v);
-                last_val = Some(v);
-            } else {
-                last_val = Some(v);
-            }
-        };
+fn get_calibration_value(val: &str) -> i32 {
+    let pattern = Regex::new(r"\d").expect("Unable to compile regex");
+    let mut digits = vec![];
+
+    for m in pattern.find_iter(val) {
+        let v = m.as_str().parse::<i32>().unwrap();
+        digits.push(v);
     }
-    if last_val.is_some() && first_val.is_some() {
-        (first_val.unwrap() * 10) + last_val.unwrap()
-    } else {
-         0
-    }
+    (digits.first().unwrap() * 10) + digits.last().unwrap()
 }
 
-fn get_calibration_value_extended(val: &str) -> u32 {
-    let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|[1-9]").expect("Unable to compile regex");
-    let mut first_val: Option<u32> = None;
-    let mut last_val: Option<u32> = None;
+fn get_calibration_value_extended(val: &str) -> i32 {
+    let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|\d").expect("Unable to compile regex");
+    let mut digits = vec![];
     let mut idx = 0;
     let length = val.len();
     while idx < length {
         if let Some(m) = pattern.find(&val[idx..]) {
-            let v: u32 = match m.as_str() {
+            let v: i32 = match m.as_str() {
                 "one" | "1" => 1,
                 "two" | "2" => 2,
                 "three" | "3" => 3,
@@ -44,30 +32,21 @@ fn get_calibration_value_extended(val: &str) -> u32 {
                 "nine" | "9" => 9,
                 _ => todo!()
             };
-            if first_val.is_none() {
-                first_val = Some(v);
-                last_val = Some(v);
-            } else {
-                last_val = Some(v);
-            }
-            idx += m.start() + 1
+            digits.push(v);
+            idx += m.start() + 1;
         } else {
             idx = length;
         }
     }
     
-    if last_val.is_some() && first_val.is_some() {
-        (first_val.unwrap() * 10) + last_val.unwrap()
-    } else {
-         0
-    }
+    (digits.first().unwrap() * 10) + digits.last().unwrap()
 }
 
-pub fn solution_day_01_01(file_path: String) -> Option<u32> {
+pub fn solution_day_01_01(file_path: String) -> Option<i32> {
     Some(fs::read_to_string(file_path).expect("Invalid File").trim().lines().map(get_calibration_value).sum())
 }
 
-pub fn solution_day_01_02(file_path: String) -> Option<u32> {
+pub fn solution_day_01_02(file_path: String) -> Option<i32> {
     Some(fs::read_to_string(file_path).expect("Invalid File").trim().lines().map(get_calibration_value_extended).sum())
 }
 
