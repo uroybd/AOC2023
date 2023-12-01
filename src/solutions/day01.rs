@@ -3,7 +3,7 @@ use regex::Regex;
 
 // Advent of Code 2022 - Day 01
 
-// An regex-based solution is possible but too slow
+// A regex-based solution is also possible, but too slow.
 fn get_calibration_value(val: &str) -> u32 {
     let mut digits = vec![];
 
@@ -45,11 +45,19 @@ fn get_calibration_value_extended(val: &str) -> i32 {
 }
 
 pub fn solution_day_01_01(file_path: String) -> Option<u32> {
-    Some(fs::read_to_string(file_path).expect("Invalid File").trim().lines().map(get_calibration_value).sum())
+    Some(fs::read_to_string(file_path)
+    .expect("Invalid File")
+    .trim().lines()
+    .map(get_calibration_value)
+    .sum())
 }
 
 pub fn solution_day_01_02(file_path: String) -> Option<i32> {
-    Some(fs::read_to_string(file_path).expect("Invalid File").trim().lines().map(get_calibration_value_extended).sum())
+    Some(fs::read_to_string(file_path)
+    .expect("Invalid File")
+    .trim().lines()
+    .map(get_calibration_value_extended)
+    .sum())
 }
 
 
