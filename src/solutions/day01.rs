@@ -28,8 +28,10 @@ fn get_calibration_value_extended(val: &str) -> u32 {
     let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|[1-9]").expect("Unable to compile regex");
     let mut first_val: Option<u32> = None;
     let mut last_val: Option<u32> = None;
-    for i in 0..val.len() {
-        if let Some(m) = pattern.find(&val[i..]) {
+    let mut idx = 0;
+    let length = val.len();
+    while idx < length {
+        if let Some(m) = pattern.find(&val[idx..]) {
             let v: u32 = match m.as_str() {
                 "one" | "1" => 1,
                 "two" | "2" => 2,
@@ -48,7 +50,9 @@ fn get_calibration_value_extended(val: &str) -> u32 {
             } else {
                 last_val = Some(v);
             }
-            
+            idx += m.start() + 1
+        } else {
+            idx = length;
         }
     }
     
@@ -90,17 +94,15 @@ mod tests {
     #[ignore]
     fn output_day_01_01() {
         let file_path: String = String::from("src/inputs/day01.txt");
-        let result = solution_day_01_01(file_path);
-        dbg!(result.unwrap());
-        assert_eq!(1, 1);
+        let result = solution_day_01_01(file_path).unwrap();
+        assert_eq!(result, 53974);
     }
 
     #[test]
     #[ignore]
     fn output_day_01_02() {
         let file_path: String = String::from("src/inputs/day01.txt");
-        let result = solution_day_01_02(file_path);
-        dbg!(result.unwrap());
-        assert_eq!(1, 1);
+        let result = solution_day_01_02(file_path).unwrap();
+        assert_eq!(result, 52840);
     }
 }
