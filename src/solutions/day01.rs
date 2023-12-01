@@ -2,13 +2,15 @@ use std::fs;
 use regex::Regex;
 
 // Advent of Code 2022 - Day 01
-fn get_calibration_value(val: &str) -> i32 {
-    let pattern = Regex::new(r"\d").expect("Unable to compile regex");
+
+// An regex-based solution is possible but too slow
+fn get_calibration_value(val: &str) -> u32 {
     let mut digits = vec![];
 
-    for m in pattern.find_iter(val) {
-        let v = m.as_str().parse::<i32>().unwrap();
-        digits.push(v);
+    for c in val.chars() {
+        if c.is_ascii_digit() {
+            digits.push(c.to_digit(10).unwrap())
+        }
     }
     (digits.first().unwrap() * 10) + digits.last().unwrap()
 }
@@ -42,7 +44,7 @@ fn get_calibration_value_extended(val: &str) -> i32 {
     (digits.first().unwrap() * 10) + digits.last().unwrap()
 }
 
-pub fn solution_day_01_01(file_path: String) -> Option<i32> {
+pub fn solution_day_01_01(file_path: String) -> Option<u32> {
     Some(fs::read_to_string(file_path).expect("Invalid File").trim().lines().map(get_calibration_value).sum())
 }
 
