@@ -1,5 +1,5 @@
 use aoc_2023::solutions::day01::{solution_day_01_01, solution_day_01_02};
-// use aoc_2022::solutions::day02::{solution_day_02_01, solution_day_02_02};
+use aoc_2023::solutions::day02::{solution_day_02_01, solution_day_02_02};
 // use aoc_2022::solutions::day03::{solution_day_03_01, solution_day_03_02};
 // use aoc_2022::solutions::day04::{solution_day_04_01, solution_day_04_02};
 // use aoc_2022::solutions::day05::{solution_day_05_01, solution_day_05_02};
@@ -28,14 +28,14 @@ fn all_solutions(c: &mut Criterion) {
         b.iter(|| solution_day_01_02(black_box(file_path.clone())))
     });
 
-    // // Day 02
-    // let file_path: String = String::from("src/inputs/day02.txt");
-    // g.bench_function("Day 02/Part 01", |b| {
-    //     b.iter(|| solution_day_02_01(black_box(file_path.clone())))
-    // });
-    // g.bench_function("Day 02/Part 02", |b| {
-    //     b.iter(|| solution_day_02_02(black_box(file_path.clone())))
-    // });
+    // Day 02
+    let file_path: String = String::from("src/inputs/day02.txt");
+    g.bench_function("Day 02/Part 01", |b| {
+        b.iter(|| solution_day_02_01(black_box(file_path.clone())))
+    });
+    g.bench_function("Day 02/Part 02", |b| {
+        b.iter(|| solution_day_02_02(black_box(file_path.clone())))
+    });
 
     // // Day 03
     // let file_path: String = String::from("src/inputs/day03.txt");
