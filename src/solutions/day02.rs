@@ -8,29 +8,19 @@ struct Game {
 
 impl Game {
     pub fn from_str(data: &str) -> Self {
-        let pair = data.split_once(": ").unwrap();
-        let mut red = 0;
-        let mut blue = 0;
-        let mut green = 0;
-        for turn in pair.1.split("; ") {
-            for color in turn.split(", ") {
-                let pair = color.split_once(' ').unwrap();
-                match pair {
-                    (num, "red") => {
-                        red = red.max(num.parse::<isize>().unwrap());
-                    },
-                    (num, "blue") => {
-                        blue = blue.max(num.parse::<isize>().unwrap());
-                    },
-                    (num, _) => {
-                        green = green.max(num.parse::<isize>().unwrap());
-                    }
-                };
+        let (game, turns) = data.split_once(": ").unwrap();
+        let mut turn_max = (0, 0, 0);
+        for color_val in turns.split([';', ',']) {
+            let (val, color) = color_val.trim().split_once(' ').unwrap();
+            match color {
+                "red" => turn_max.0 = turn_max.0.max(val.parse::<isize>().unwrap()),
+                "blue" => turn_max.1 = turn_max.1.max(val.parse::<isize>().unwrap()),
+                _ => turn_max.2 = turn_max.2.max(val.parse::<isize>().unwrap()),
             }
-        }
+        };
         Self {
-            id: pair.0.split_once(" ").unwrap().1.parse::<isize>().unwrap(),
-            turn_max: (red, blue, green)
+            id: game.split_once(' ').unwrap().1.parse::<isize>().unwrap(),
+            turn_max
         }
     }
 
