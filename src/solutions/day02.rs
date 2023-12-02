@@ -62,8 +62,13 @@ pub fn solution_day_02_01(file_path: String) -> Option<isize> {
     let result = fs::read_to_string(file_path)
     .expect("Invalid input file.").lines()
     .map(Game::from_str)
-    .filter(|g| g.is_valid((12, 14, 13)))
-    .map(|g| g.id)
+    .filter_map(|g| {
+        if g.is_valid((12, 14, 13)){
+            Some(g.id)
+        } else {
+            None
+        }
+    })
     .sum();
     Some(result)
 }
