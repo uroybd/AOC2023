@@ -1,59 +1,45 @@
 use std::fs;
 
 // Advent of Code 2022 - Day 02
-
-struct Turn(isize, isize, isize);
-
-impl Turn {
-    pub fn from_str(data: &str) -> Self {
-        let mut red = 0;
-        let mut blue = 0;
-        let mut green = 0;
-        data.split(", ").for_each(|f| {
-            let pair = f.split_once(' ').unwrap();
-            match pair {
-                (num, "red") => {
-                    red = num.parse::<isize>().unwrap();
-                },
-                (num, "blue") => {
-                    blue = num.parse::<isize>().unwrap();
-                },
-                (num, _) => {
-                    green = num.parse::<isize>().unwrap();
-                }
-            };
-        });
-        Turn ( red, blue, green )
-    }
-}
-
 struct Game {
     id: isize,
-    turns: Vec<Turn>
+    turn_max: (isize, isize, isize)
 }
 
 impl Game {
     pub fn from_str(data: &str) -> Self {
         let pair = data.split_once(": ").unwrap();
+        let mut red = 0;
+        let mut blue = 0;
+        let mut green = 0;
+        for turn in pair.1.split("; ") {
+            for color in turn.split(", ") {
+                let pair = color.split_once(' ').unwrap();
+                match pair {
+                    (num, "red") => {
+                        red = red.max(num.parse::<isize>().unwrap());
+                    },
+                    (num, "blue") => {
+                        blue = blue.max(num.parse::<isize>().unwrap());
+                    },
+                    (num, _) => {
+                        green = green.max(num.parse::<isize>().unwrap());
+                    }
+                };
+            }
+        }
         Self {
             id: pair.0.split_once(" ").unwrap().1.parse::<isize>().unwrap(),
-            turns: pair.1.split("; ").map(Turn::from_str).collect()
+            turn_max: (red, blue, green)
         }
     }
 
     pub fn is_valid(&self, caps: (isize, isize, isize)) -> bool {
-        for t in self.turns.iter() {
-            if t.0 > caps.0 || t.1 > caps.1 || t.2 > caps.2 {
-                return false;
-            }
-        }
-        true
+        self.turn_max.0 <= caps.0 && self.turn_max.1 <= caps.1 && self.turn_max.2 <= caps.2
     }
 
     pub fn power(&self) -> isize {
-        let val = self.turns.iter()
-        .fold((0, 0, 0), |acc, t| (t.0.max(acc.0), t.1.max(acc.1), t.2.max(acc.2)));
-        val.0 * val.1 * val.2
+        self.turn_max.0 * self.turn_max.1 * self.turn_max.2
     }
 
 }
