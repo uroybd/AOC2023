@@ -15,33 +15,27 @@ fn get_calibration_value(val: &str) -> u32 {
     (digits.first().unwrap() * 10) + digits.last().unwrap()
 }
 
-fn get_calibration_value_extended(val: &str) -> i32 {
-    let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|\d").expect("Unable to compile regex");
-    let mut digits = vec![];
-    let mut idx = 0;
-    let length = val.len();
-    while idx < length {
-        if let Some(m) = pattern.find(&val[idx..]) {
-            let v: i32 = match m.as_str() {
-                "one" | "1" => 1,
-                "two" | "2" => 2,
-                "three" | "3" => 3,
-                "four" | "4" => 4,
-                "five" | "5" => 5,
-                "six" | "6" => 6,
-                "seven" | "7" => 7,
-                "eight" | "8" => 8,
-                "nine" | "9" => 9,
-                _ => todo!()
-            };
-            digits.push(v);
-            idx += m.start() + 1;
-        } else {
-            idx = length;
-        }
+fn get_converted_value(s: &str) -> i32 {
+    match s {
+        "one" | "1" => 1,
+        "two" | "2" => 2,
+        "three" | "3" => 3,
+        "four" | "4" => 4,
+        "five" | "5" => 5,
+        "six" | "6" => 6,
+        "seven" | "7" => 7,
+        "eight" | "8" => 8,
+        "nine" | "9" => 9,
+        _ => todo!()
     }
-    
-    (digits.first().unwrap() * 10) + digits.last().unwrap()
+}
+
+fn get_calibration_value_extended(val: &str, p: &Regex, rev_p: &Regex) -> i32 {
+    let first = p.find(val).unwrap().as_str();
+    let rev_val: String = val.chars().rev().collect();
+    let last_match = rev_p.find(&rev_val).unwrap().as_str();
+    let last: String = last_match.chars().rev().collect();
+    (get_converted_value(first) * 10) + get_converted_value(&last)
 }
 
 pub fn solution_day_01_01(file_path: String) -> Option<u32> {
@@ -53,10 +47,13 @@ pub fn solution_day_01_01(file_path: String) -> Option<u32> {
 }
 
 pub fn solution_day_01_02(file_path: String) -> Option<i32> {
+    let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|\d").expect("Unable to compile regex");
+    let reverse_pattern = Regex::new(r"enin|thgie|neves|xis|evif|ruof|eerht|owt|eno|\d").expect("Unable to compile regex");
+    
     Some(fs::read_to_string(file_path)
     .expect("Invalid File")
     .trim().lines()
-    .map(get_calibration_value_extended)
+    .map(|l| get_calibration_value_extended(l, &pattern, &reverse_pattern))
     .sum())
 }
 
