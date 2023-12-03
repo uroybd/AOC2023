@@ -91,11 +91,10 @@ impl Schema {
     }
 
     pub fn find_all_valid_parts(&self) -> Vec<&PartIndex> {
-        let mut all_parts = vec![];
-        for sym in self.symbols.iter() {
-            all_parts.append(&mut self.find_adjacent(sym));
-        }
-        all_parts
+        self.symbols
+            .iter()
+            .flat_map(|sym| self.find_adjacent(sym))
+            .collect()
     }
 
     pub fn get_gear_ratio(&self, sym: &Symbol) -> Option<usize> {
