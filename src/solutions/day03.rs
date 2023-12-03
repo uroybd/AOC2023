@@ -1,6 +1,6 @@
 use std::fs;
 
-// Advent of Code 2022 - Day 03
+// Advent of Code 2023 - Day 03
 #[derive(Debug)]
 struct PartIndex {
     num: usize,

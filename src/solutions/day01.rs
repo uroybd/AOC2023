@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::fs;
 
-// Advent of Code 2022 - Day 01
+// Advent of Code 2023 - Day 01
 
 // A regex-based solution is also possible, but too slow.
 fn get_calibration_value(val: &str) -> u32 {

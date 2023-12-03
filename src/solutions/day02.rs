@@ -1,6 +1,6 @@
 use std::fs;
 
-// Advent of Code 2022 - Day 02
+// Advent of Code 2023 - Day 02
 struct Game {
     id: usize,
     turn_max: [usize; 3],
