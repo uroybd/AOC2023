@@ -38,9 +38,13 @@ fn get_converted_value(s: &str) -> u32 {
 
 fn get_calibration_value_extended(val: &str, p: &Regex, rev_p: &Regex) -> u32 {
     let first = p.find(val).unwrap().as_str();
-    let rev_val: String = val.chars().rev().collect();
-    let last_match = rev_p.find(&rev_val).unwrap().as_str();
-    let last: String = last_match.chars().rev().collect();
+    let last: String = rev_p
+        .find(&val.chars().rev().collect::<String>())
+        .unwrap()
+        .as_str()
+        .chars()
+        .rev()
+        .collect();
     (get_converted_value(first) * 10) + get_converted_value(&last)
 }
 
