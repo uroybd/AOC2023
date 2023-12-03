@@ -29,7 +29,7 @@ impl Schema {
             parts: vec![],
             symbols: vec![]
         };
-        let width = input.split_once("\n").unwrap().0.len();
+        let width = input.split_once('\n').unwrap().0.len();
         let mut part_nums = vec![];
         for (y, row_str) in input.lines().enumerate() {
             
@@ -75,7 +75,7 @@ impl Schema {
     pub fn find_all_valid_parts(&self) -> Vec<&PartIndex> {
         let mut all_parts = vec![];
         for sym in self.symbols.iter() {
-            let mut adj = self.find_adjacent(&sym);
+            let mut adj = self.find_adjacent(sym);
             all_parts.append(&mut adj);
         }
         all_parts
