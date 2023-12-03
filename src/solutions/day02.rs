@@ -3,19 +3,19 @@ use std::fs;
 // Advent of Code 2022 - Day 02
 struct Game {
     id: isize,
-    turn_max: (isize, isize, isize)
+    turn_max: [isize; 3]
 }
 
 impl Game {
     pub fn from_str(data: &str) -> Self {
         let (game, turns) = data.split_once(": ").unwrap();
-        let mut turn_max = (0, 0, 0);
+        let mut turn_max = [0; 3];
         for color_val in turns.split([';', ',']) {
             let (val, color) = color_val.trim().split_once(' ').unwrap();
             match color {
-                "red" => turn_max.0 = turn_max.0.max(val.parse::<isize>().unwrap()),
-                "blue" => turn_max.1 = turn_max.1.max(val.parse::<isize>().unwrap()),
-                _ => turn_max.2 = turn_max.2.max(val.parse::<isize>().unwrap()),
+                "red" => turn_max[0] = turn_max[0].max(val.parse::<isize>().unwrap()),
+                "blue" => turn_max[1] = turn_max[1].max(val.parse::<isize>().unwrap()),
+                _ => turn_max[2] = turn_max[2].max(val.parse::<isize>().unwrap()),
             }
         };
         Self {
@@ -24,12 +24,17 @@ impl Game {
         }
     }
 
-    pub fn is_valid(&self, caps: (isize, isize, isize)) -> bool {
-        self.turn_max.0 <= caps.0 && self.turn_max.1 <= caps.1 && self.turn_max.2 <= caps.2
+    pub fn is_valid(&self, caps: &[isize; 3]) -> bool {
+        for (idx, val) in self.turn_max.iter().enumerate() {
+            if val > &caps[idx] {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn power(&self) -> isize {
-        self.turn_max.0 * self.turn_max.1 * self.turn_max.2
+        self.turn_max.iter().copied().reduce(|acc, a| acc * a).unwrap()
     }
 
 }
@@ -37,13 +42,9 @@ impl Game {
 pub fn solution_day_02_01(file_path: String) -> Option<isize> {
     let result = fs::read_to_string(file_path)
     .expect("Invalid input file.").lines()
-    .map(Game::from_str)
-    .filter_map(|g| {
-        if g.is_valid((12, 14, 13)){
-            Some(g.id)
-        } else {
-            None
-        }
+    .filter_map(|l| {
+        let g = Game::from_str(l);
+        if g.is_valid(&[12, 14, 13]){ Some(g.id) } else { None }
     })
     .sum();
     Some(result)
@@ -53,8 +54,7 @@ pub fn solution_day_02_02(file_path: String) -> Option<isize> {
     let result = fs::read_to_string(file_path)
     .expect("Invalid input file.")
     .lines()
-    .map(Game::from_str)
-    .map(|g| g.power())
+    .map(|l| Game::from_str(l).power())
     .sum();
     Some(result)
 }

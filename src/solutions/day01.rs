@@ -5,14 +5,9 @@ use regex::Regex;
 
 // A regex-based solution is also possible, but too slow.
 fn get_calibration_value(val: &str) -> u32 {
-    let mut digits = vec![];
-
-    for c in val.chars() {
-        if c.is_ascii_digit() {
-            digits.push(c.to_digit(10).unwrap())
-        }
-    }
-    (digits.first().unwrap() * 10) + digits.last().unwrap()
+    let first = val.chars().find(|c| c.is_ascii_digit()).unwrap().to_digit(10).unwrap();
+    let last = val.chars().rev().find(|c| c.is_ascii_digit()).unwrap().to_digit(10).unwrap();
+    (first * 10) + last
 }
 
 fn get_converted_value(s: &str) -> i32 {
@@ -40,8 +35,7 @@ fn get_calibration_value_extended(val: &str, p: &Regex, rev_p: &Regex) -> i32 {
 
 pub fn solution_day_01_01(file_path: String) -> Option<u32> {
     Some(fs::read_to_string(file_path)
-    .expect("Invalid File")
-    .trim().lines()
+    .expect("Invalid File").lines()
     .map(get_calibration_value)
     .sum())
 }
@@ -51,8 +45,7 @@ pub fn solution_day_01_02(file_path: String) -> Option<i32> {
     let reverse_pattern = Regex::new(r"enin|thgie|neves|xis|evif|ruof|eerht|owt|eno|\d").expect("Unable to compile regex");
     
     Some(fs::read_to_string(file_path)
-    .expect("Invalid File")
-    .trim().lines()
+    .expect("Invalid File").lines()
     .map(|l| get_calibration_value_extended(l, &pattern, &reverse_pattern))
     .sum())
 }
