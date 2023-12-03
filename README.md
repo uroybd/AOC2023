@@ -10,9 +10,9 @@ Shamelessly stole and adapted [the scaffolding mechanism found here](https://git
 
 | Day/Part | Part 1 | Part 2 | Total |
 |:---------|-------:|-------:|------:|
-| **Day 01** | 75.90μs | 562.54μs | 638.44μs |
-| **Day 02** | 33.63μs | 33.51μs | 67.14μs |
+| **Day 01** | 41.35μs | 553.61μs | 594.96μs |
+| **Day 02** | 39.02μs | 39.00μs | 78.02μs |
 
 
-**Total runtime: 705.58μs**
+**Total runtime: 672.98μs**
 
