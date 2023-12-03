@@ -93,8 +93,7 @@ impl Schema {
     pub fn find_all_valid_parts(&self) -> Vec<&PartIndex> {
         let mut all_parts = vec![];
         for sym in self.symbols.iter() {
-            let mut adj = self.find_adjacent(sym);
-            all_parts.append(&mut adj);
+            all_parts.append(&mut self.find_adjacent(sym));
         }
         all_parts
     }
