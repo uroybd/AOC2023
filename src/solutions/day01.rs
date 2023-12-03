@@ -10,7 +10,7 @@ fn get_calibration_value(val: &str) -> u32 {
     (first * 10) + last
 }
 
-fn get_converted_value(s: &str) -> i32 {
+fn get_converted_value(s: &str) -> u32 {
     match s {
         "one" | "1" => 1,
         "two" | "2" => 2,
@@ -25,7 +25,7 @@ fn get_converted_value(s: &str) -> i32 {
     }
 }
 
-fn get_calibration_value_extended(val: &str, p: &Regex, rev_p: &Regex) -> i32 {
+fn get_calibration_value_extended(val: &str, p: &Regex, rev_p: &Regex) -> u32 {
     let first = p.find(val).unwrap().as_str();
     let rev_val: String = val.chars().rev().collect();
     let last_match = rev_p.find(&rev_val).unwrap().as_str();
@@ -40,7 +40,7 @@ pub fn solution_day_01_01(file_path: String) -> Option<u32> {
     .sum())
 }
 
-pub fn solution_day_01_02(file_path: String) -> Option<i32> {
+pub fn solution_day_01_02(file_path: String) -> Option<u32> {
     let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|\d").expect("Unable to compile regex");
     let reverse_pattern = Regex::new(r"enin|thgie|neves|xis|evif|ruof|eerht|owt|eno|\d").expect("Unable to compile regex");
     
