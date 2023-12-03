@@ -3,7 +3,7 @@ use std::fs;
 // Advent of Code 2022 - Day 02
 struct Game {
     id: usize,
-    turn_max: [usize; 3]
+    turn_max: [usize; 3],
 }
 
 impl Game {
@@ -17,10 +17,10 @@ impl Game {
                 "blue" => turn_max[1] = turn_max[1].max(val.parse::<usize>().unwrap()),
                 _ => turn_max[2] = turn_max[2].max(val.parse::<usize>().unwrap()),
             }
-        };
+        }
         Self {
             id: game.split_once(' ').unwrap().1.parse::<usize>().unwrap(),
-            turn_max
+            turn_max,
         }
     }
 
@@ -34,31 +34,38 @@ impl Game {
     }
 
     pub fn power(&self) -> usize {
-        self.turn_max.iter().copied().reduce(|acc, a| acc * a).unwrap()
+        self.turn_max
+            .iter()
+            .copied()
+            .reduce(|acc, a| acc * a)
+            .unwrap()
     }
-
 }
 
 pub fn solution_day_02_01(file_path: String) -> Option<usize> {
     let result = fs::read_to_string(file_path)
-    .expect("Invalid input file.").lines()
-    .filter_map(|l| {
-        let g = Game::from_str(l);
-        if g.is_valid(&[12, 14, 13]){ Some(g.id) } else { None }
-    })
-    .sum();
+        .expect("Invalid input file.")
+        .lines()
+        .filter_map(|l| {
+            let g = Game::from_str(l);
+            if g.is_valid(&[12, 14, 13]) {
+                Some(g.id)
+            } else {
+                None
+            }
+        })
+        .sum();
     Some(result)
 }
 
 pub fn solution_day_02_02(file_path: String) -> Option<usize> {
     let result = fs::read_to_string(file_path)
-    .expect("Invalid input file.")
-    .lines()
-    .map(|l| Game::from_str(l).power())
-    .sum();
+        .expect("Invalid input file.")
+        .lines()
+        .map(|l| Game::from_str(l).power())
+        .sum();
     Some(result)
 }
-
 
 #[cfg(test)]
 mod tests {
