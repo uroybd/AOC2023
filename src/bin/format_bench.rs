@@ -4,7 +4,7 @@ use std::{
     io::{self, BufRead, Write},
 };
 
-const TOP_TEMPLATE: &str = r###"## Benchmarks
+const TOP_TEMPLATE: &str = r###"## Runtime
 
 | Day/Part | Part 1 | Part 2 | Total |
 |:---------|-------:|-------:|------:|
@@ -176,7 +176,7 @@ fn main() {
         }
     }
     let read_me_content = fs::read_to_string("README.md").unwrap_or_else(|_| "".to_string());
-    let read_me = read_me_content.split("## Benchmarks").next().unwrap();
+    let read_me = read_me_content.split("## Runtime").next().unwrap();
     let mut writer = OpenOptions::new()
         .write(true)
         .create(true)
