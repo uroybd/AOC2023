@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, iter::FlatMap};
 
 // Advent of Code 2023 - Day 03
 #[derive(Debug)]
@@ -90,11 +90,8 @@ impl Schema {
             .collect()
     }
 
-    pub fn find_all_valid_parts(&self) -> Vec<&PartIndex> {
-        self.symbols
-            .iter()
-            .flat_map(|sym| self.find_adjacent(sym))
-            .collect()
+    pub fn find_all_valid_parts(&self) -> impl Iterator<Item = &PartIndex> {
+        self.symbols.iter().flat_map(|sym| self.find_adjacent(sym))
     }
 
     pub fn get_gear_ratio(&self, sym: &Symbol) -> Option<usize> {
@@ -111,7 +108,7 @@ impl Schema {
 
 pub fn solution_day_03_01(file_path: String) -> Option<usize> {
     let schema = Schema::parse(&fs::read_to_string(file_path).expect("Invalid File."));
-    let res = schema.find_all_valid_parts().iter().map(|p| p.num).sum();
+    let res = schema.find_all_valid_parts().map(|p| p.num).sum();
     Some(res)
 }
 
