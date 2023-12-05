@@ -1,4 +1,4 @@
-use std::{fs, iter::FlatMap};
+use std::fs;
 
 // Advent of Code 2023 - Day 03
 #[derive(Debug)]
