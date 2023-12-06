@@ -10,10 +10,11 @@ struct Stat {
 
 impl Stat {
     fn winning_count(&self) -> usize {
-        (0..=self.time)
-            .map(|t| (self.time - t) * t)
-            .filter(|v| v > &self.distance)
-            .count()
+        let offset = if let 0 = self.time % 2 { 1 } else { 0 };
+        (0..=self.time / 2).fold(0, |acc, t| {
+            acc + ((self.time - t) * t > self.distance) as usize
+        }) * 2
+            - offset
     }
 }
 
@@ -88,17 +89,15 @@ mod tests {
     #[ignore]
     fn output_day_06_01() {
         let file_path: String = String::from("src/inputs/day06.txt");
-        let result = solution_day_06_01(file_path);
-        dbg!(result.unwrap());
-        assert_eq!(1, 1);
+        let result = solution_day_06_01(file_path).unwrap();
+        assert_eq!(result, 1312850);
     }
 
     #[test]
     #[ignore]
     fn output_day_06_02() {
         let file_path: String = String::from("src/inputs/day06.txt");
-        let result = solution_day_06_02(file_path);
-        dbg!(result.unwrap());
-        assert_eq!(1, 1);
+        let result = solution_day_06_02(file_path).unwrap();
+        assert_eq!(result, 36749103);
     }
 }
