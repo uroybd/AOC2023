@@ -22,7 +22,7 @@ impl AlmanacRange {
 
 trait AlmanacRangeVec {
     fn merge(&self) -> Vec<AlmanacRange>;
-    fn find_by_range(&self, range: &AlmanacRange) -> Vec<AlmanacRange>;
+    fn generate_ranges(&self, range: &AlmanacRange) -> Vec<AlmanacRange>;
 }
 
 impl AlmanacRangeVec for Vec<AlmanacRange> {
@@ -43,7 +43,7 @@ impl AlmanacRangeVec for Vec<AlmanacRange> {
         merged
     }
 
-    fn find_by_range(&self, range: &AlmanacRange) -> Vec<AlmanacRange> {
+    fn generate_ranges(&self, range: &AlmanacRange) -> Vec<AlmanacRange> {
         let mut results = vec![];
         let mut cursor = range.start;
         let mut remaining = range.length;
@@ -100,7 +100,7 @@ struct Almanac {
 }
 
 impl Almanac {
-    pub fn parse(inp: &str) -> Self {
+    fn parse(inp: &str) -> Self {
         let mut rval = Self {
             seeds: vec![],
             rules: vec![],
@@ -113,6 +113,17 @@ impl Almanac {
         }
         rval.rules = sections.map(Almanac::parse_section).collect();
         rval
+    }
+
+    fn seeds_as_ranges(&self) -> Vec<AlmanacRange> {
+        self.seeds
+            .chunks(2)
+            .map(|pair| AlmanacRange {
+                start: pair[0],
+                length: pair[1],
+                dest: None,
+            })
+            .collect()
     }
 
     fn parse_section(inp: &str) -> Vec<AlmanacRange> {
@@ -162,22 +173,14 @@ pub fn solution_day_05_01(file_path: String) -> Option<usize> {
 
 pub fn solution_day_05_02(file_path: String) -> Option<usize> {
     let almanac = Almanac::parse(&fs::read_to_string(file_path).unwrap());
-    let seed_ranges: Vec<AlmanacRange> = almanac
-        .seeds
-        .chunks(2)
-        .map(|pair| AlmanacRange {
-            start: pair[0],
-            length: pair[1],
-            dest: None,
-        })
-        .collect();
+    let seed_ranges = almanac.seeds_as_ranges();
     let res = almanac
         .rules
         .iter()
         .fold(seed_ranges, |ranges, section| {
             let mut vals: Vec<AlmanacRange> = ranges
                 .iter()
-                .flat_map(|sr| section.find_by_range(sr))
+                .flat_map(|sr| section.generate_ranges(sr))
                 .filter(|r| r.length > 0)
                 .collect();
             vals.sort_by(|a, b| a.start.cmp(&b.start));
