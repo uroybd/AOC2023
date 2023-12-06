@@ -2,66 +2,48 @@ use std::fs;
 
 // Advent of Code 2023 - Day 06
 
-struct Stat {
-    time: usize,
-    distance: usize,
+fn winning_count(stat: &(usize, usize)) -> usize {
+    let offset = if let 0 = stat.0 % 2 { 1 } else { 0 };
+    (0..=stat.0 / 2).fold(0, |acc, t| acc + ((stat.0 - t) * t > stat.1) as usize) * 2 - offset
 }
 
-impl Stat {
-    fn winning_count(&self) -> usize {
-        let offset = if let 0 = self.time % 2 { 1 } else { 0 };
-        (0..=self.time / 2).fold(0, |acc, t| {
-            acc + ((self.time - t) * t > self.distance) as usize
-        }) * 2
-            - offset
-    }
-}
-
-fn parse(data: &str) -> Vec<Stat> {
-    let (times, distances) = data.split_once('n').unwrap();
-    times
-        .split_once(':')
+fn parse_line(l: &str) -> impl Iterator<Item = usize> + '_ {
+    l.split_once(':')
         .unwrap()
         .1
         .split_whitespace()
-        .zip(distances.split_once(':').unwrap().1.split_whitespace())
-        .map(|(t, d)| Stat {
-            time: t.parse::<usize>().unwrap(),
-            distance: d.parse::<usize>().unwrap(),
-        })
-        .collect()
+        .map(|s| s.parse::<usize>().unwrap())
 }
 
-fn parse_combined(data: &str) -> Stat {
+fn parse(data: &str) -> Vec<(usize, usize)> {
     let (times, distances) = data.split_once('\n').unwrap();
-    Stat {
-        time: times
-            .replace(' ', "")
+    parse_line(times).zip(parse_line(distances)).collect()
+}
+
+fn parse_combined(data: &str) -> (usize, usize) {
+    let mut parts = data.split('\n').map(|v| {
+        v.replace(' ', "")
             .split_once(':')
             .unwrap()
             .1
             .parse::<usize>()
-            .unwrap(),
-        distance: distances
-            .replace(' ', "")
-            .split_once(':')
             .unwrap()
-            .1
-            .parse::<usize>()
-            .unwrap(),
-    }
+    });
+    (parts.next().unwrap(), parts.next().unwrap())
 }
 
 pub fn solution_day_06_01(file_path: String) -> Option<usize> {
     Some(
         parse(&fs::read_to_string(file_path).expect("Invalid Input."))
             .iter()
-            .fold(1, |acc, s| acc * s.winning_count()),
+            .fold(1, |acc, s| acc * winning_count(s)),
     )
 }
 
 pub fn solution_day_06_02(file_path: String) -> Option<usize> {
-    Some(parse_combined(&fs::read_to_string(file_path).expect("Invalid Input.")).winning_count())
+    Some(winning_count(&parse_combined(
+        &fs::read_to_string(file_path).expect("Invalid Input."),
+    )))
 }
 
 #[cfg(test)]
