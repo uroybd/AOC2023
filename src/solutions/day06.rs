@@ -2,7 +2,6 @@ use std::fs;
 
 // Advent of Code 2023 - Day 06
 
-#[derive(Debug)]
 struct Stat {
     time: usize,
     distance: usize,
@@ -37,21 +36,17 @@ fn parse_combined(data: &str) -> Stat {
     let (times, distances) = data.split_once('\n').unwrap();
     Stat {
         time: times
+            .replace(' ', "")
             .split_once(':')
             .unwrap()
             .1
-            .split_whitespace()
-            .collect::<String>()
-            .trim()
             .parse::<usize>()
             .unwrap(),
         distance: distances
+            .replace(' ', "")
             .split_once(':')
             .unwrap()
             .1
-            .split_whitespace()
-            .collect::<String>()
-            .trim()
             .parse::<usize>()
             .unwrap(),
     }
