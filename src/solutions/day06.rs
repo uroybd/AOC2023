@@ -53,13 +53,15 @@ fn parse_combined(data: &str) -> Stat {
 }
 
 pub fn solution_day_06_01(file_path: String) -> Option<usize> {
-    let stats = parse(&fs::read_to_string(file_path).expect("Invalid Input."));
-    Some(stats.iter().fold(1, |acc, s| acc * s.winning_count()))
+    Some(
+        parse(&fs::read_to_string(file_path).expect("Invalid Input."))
+            .iter()
+            .fold(1, |acc, s| acc * s.winning_count()),
+    )
 }
 
 pub fn solution_day_06_02(file_path: String) -> Option<usize> {
-    let stat = parse_combined(&fs::read_to_string(file_path).expect("Invalid Input."));
-    Some(stat.winning_count())
+    Some(parse_combined(&fs::read_to_string(file_path).expect("Invalid Input.")).winning_count())
 }
 
 #[cfg(test)]
