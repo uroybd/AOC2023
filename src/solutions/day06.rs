@@ -2,31 +2,40 @@ use std::fs;
 
 // Advent of Code 2023 - Day 06
 
-fn winning_count(stat: &(usize, usize)) -> usize {
-    let offset = if let 0 = stat.0 % 2 { 1 } else { 0 };
-    (0..=stat.0 / 2).fold(0, |acc, t| acc + ((stat.0 - t) * t > stat.1) as usize) * 2 - offset
+fn winning_count(stat: &(f64, f64)) -> usize {
+    let (b, c) = *stat;
+    let delta = (b.powi(2) - (4.0 * c)).sqrt();
+    let mut start = ((b - delta) / 2.0).ceil();
+    let mut end = ((b + delta) / 2.0).floor();
+    if start * (b - start) > c {
+        start -= 1.0;
+    }
+    if end * (b - end) > c {
+        end += 1.0
+    }
+    (end - start) as usize - 1
 }
 
-fn parse_line(l: &str) -> impl Iterator<Item = usize> + '_ {
+fn parse_line(l: &str) -> impl Iterator<Item = f64> + '_ {
     l.split_once(':')
         .unwrap()
         .1
         .split_whitespace()
-        .map(|s| s.parse::<usize>().unwrap())
+        .map(|s| s.parse::<f64>().unwrap())
 }
 
-fn parse(data: &str) -> Vec<(usize, usize)> {
+fn parse(data: &str) -> Vec<(f64, f64)> {
     let (times, distances) = data.split_once('\n').unwrap();
     parse_line(times).zip(parse_line(distances)).collect()
 }
 
-fn parse_combined(data: &str) -> (usize, usize) {
+fn parse_combined(data: &str) -> (f64, f64) {
     let mut parts = data.split('\n').map(|v| {
         v.replace(' ', "")
             .split_once(':')
             .unwrap()
             .1
-            .parse::<usize>()
+            .parse::<f64>()
             .unwrap()
     });
     (parts.next().unwrap(), parts.next().unwrap())
