@@ -4,13 +4,13 @@ use std::{collections::HashMap, fs};
 
 #[derive(PartialEq, Eq, Ord, PartialOrd)]
 struct Hand {
-    value: usize,
+    value: u8,
     cards: String,
     bid: usize,
 }
 
 impl Hand {
-    fn get_value(hand: &str) -> usize {
+    fn get_value(hand: &str) -> u8 {
         let mut counts: HashMap<char, usize> =
             hand.chars().fold(HashMap::new(), |mut counter, card| {
                 let v = counter.entry(card).or_insert(0);
