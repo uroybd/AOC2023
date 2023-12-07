@@ -2,49 +2,25 @@
 
 use std::{collections::HashMap, fs};
 
-#[derive(PartialEq, Eq, Ord, PartialOrd)]
-struct Card {
-    value: usize,
-    symbol: char,
-}
-
-impl Card {
-    fn from_char(symbol: char, wild: bool) -> Self {
-        let j = if wild { 1 } else { 11 };
-        let value = match symbol {
-            'A' => 14,
-            'K' => 13,
-            'Q' => 12,
-            'J' => j,
-            'T' => 10,
-            num => num.to_string().parse().unwrap(),
-        };
-        Self { symbol, value }
-    }
-}
-
 #[derive(PartialEq, Eq)]
 struct Hand {
     value: usize,
     bid: usize,
-    cards: Vec<Card>,
+    cards: String,
 }
 
 impl Hand {
-    fn get_value(hand: &[Card], wild: bool) -> usize {
+    fn get_value(hand: &str) -> usize {
         let mut counts: HashMap<char, usize> =
-            hand.iter().fold(HashMap::new(), |mut counter, card| {
-                let v = counter.entry(card.symbol).or_insert(0);
+            hand.chars().fold(HashMap::new(), |mut counter, card| {
+                let v = counter.entry(card).or_insert(0);
                 *v += 1;
                 counter
             });
 
-        let mut j_val = 0;
-        if wild {
-            j_val = counts.remove(&'J').unwrap_or(0);
-            if j_val == 5 {
-                return 7;
-            }
+        let j_val = counts.remove(&'1').unwrap_or(0);
+        if j_val == 5 {
+            return 7;
         }
         let mut counts: Vec<usize> = counts.values().cloned().collect();
         counts.sort_by(|a, b| b.cmp(a));
@@ -63,9 +39,19 @@ impl Hand {
     }
 
     fn from_str(val: &str, wild: bool) -> Self {
+        let j = if wild { '1' } else { 'U' };
         let (h, b) = val.split_once(' ').unwrap();
-        let cards: Vec<Card> = h.chars().map(|c| Card::from_char(c, wild)).collect();
-        let value = Hand::get_value(cards.as_slice(), wild);
+        let cards: String = h
+            .chars()
+            .map(|c| match c {
+                'J' => j,
+                'Q' => 'V',
+                'K' => 'W',
+                'A' => 'X',
+                o => o,
+            })
+            .collect();
+        let value = Hand::get_value(&cards);
         Self {
             cards,
             value,
