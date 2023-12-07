@@ -1,12 +1,12 @@
-// Advent of Code 2023 - Day 07
-
 use std::{collections::HashMap, fs};
 
-#[derive(PartialEq, Eq)]
+// Advent of Code 2023 - Day 07
+
+#[derive(PartialEq, Eq, Ord, PartialOrd)]
 struct Hand {
     value: usize,
-    bid: usize,
     cards: String,
+    bid: usize,
 }
 
 impl Hand {
@@ -53,25 +53,10 @@ impl Hand {
             .collect();
         let value = Hand::get_value(&cards);
         Self {
-            cards,
             value,
+            cards,
             bid: b.trim().parse().unwrap(),
         }
-    }
-}
-
-impl Ord for Hand {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match self.value.cmp(&other.value) {
-            std::cmp::Ordering::Equal => self.cards.cmp(&other.cards),
-            o => o,
-        }
-    }
-}
-
-impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
     }
 }
 
