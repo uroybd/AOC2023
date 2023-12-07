@@ -131,7 +131,7 @@ impl Almanac {
             .lines()
             .skip(1)
             .map(|l| {
-                let mut parts = l.splitn(3, " ");
+                let mut parts = l.splitn(3, ' ');
                 let dest = parts.next().unwrap().parse::<usize>().unwrap();
                 let src = parts.next().unwrap().parse::<usize>().unwrap();
                 let count = parts.next().unwrap().parse::<usize>().unwrap();

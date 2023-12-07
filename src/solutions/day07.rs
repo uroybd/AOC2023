@@ -9,9 +9,9 @@ struct Card {
 }
 
 impl Card {
-    fn from_char(c: char, wild: bool) -> Self {
+    fn from_char(symbol: char, wild: bool) -> Self {
         let j = if wild { 1 } else { 11 };
-        let value = match c {
+        let value = match symbol {
             'A' => 14,
             'K' => 13,
             'Q' => 12,
@@ -19,7 +19,7 @@ impl Card {
             'T' => 10,
             num => num.to_string().parse().unwrap(),
         };
-        Self { symbol: c, value }
+        Self { symbol, value }
     }
 }
 
