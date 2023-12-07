@@ -99,22 +99,29 @@ struct Almanac {
     rules: Vec<Vec<AlmanacRange>>,
 }
 
-impl Almanac {
-    fn parse(inp: &str) -> Self {
+#[derive(Debug, PartialEq, Eq)]
+struct ParseAlmanacError;
+
+impl std::str::FromStr for Almanac {
+    type Err = ParseAlmanacError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut rval = Self {
             seeds: vec![],
             rules: vec![],
         };
-        let mut sections = inp.split("\n\n");
+        let mut sections = s.split("\n\n");
         let (_, seeds) = sections.next().unwrap().split_once(": ").unwrap();
         for i in seeds.split(' ') {
             let v = i.parse::<usize>().unwrap();
             rval.seeds.push(v);
         }
         rval.rules = sections.map(Almanac::parse_section).collect();
-        rval
+        Ok(rval)
     }
+}
 
+impl Almanac {
     fn seeds_as_ranges(&self) -> Vec<AlmanacRange> {
         self.seeds
             .chunks(2)
@@ -161,7 +168,10 @@ impl Almanac {
 }
 
 pub fn solution_day_05_01(file_path: String) -> Option<usize> {
-    let almanac = Almanac::parse(&fs::read_to_string(file_path).unwrap());
+    let almanac: Almanac = fs::read_to_string(file_path)
+        .expect("Invalid Input file.")
+        .parse()
+        .unwrap();
 
     let res = almanac
         .seeds
@@ -172,7 +182,10 @@ pub fn solution_day_05_01(file_path: String) -> Option<usize> {
 }
 
 pub fn solution_day_05_02(file_path: String) -> Option<usize> {
-    let almanac = Almanac::parse(&fs::read_to_string(file_path).unwrap());
+    let almanac: Almanac = fs::read_to_string(file_path)
+        .expect("Invalid Input file.")
+        .parse()
+        .unwrap();
     let seed_ranges = almanac.seeds_as_ranges();
     let res = almanac
         .rules

@@ -22,15 +22,20 @@ struct Schema {
     symbols: Vec<Symbol>,
 }
 
-impl Schema {
-    pub fn parse(input: &str) -> Self {
+#[derive(Debug, PartialEq, Eq)]
+struct ParseSchemaError;
+
+impl std::str::FromStr for Schema {
+    type Err = ParseSchemaError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut parsed = Self {
             parts: vec![],
             symbols: vec![],
         };
-        let width = input.split_once('\n').unwrap().0.len();
+        let width = s.split_once('\n').unwrap().0.len();
         let mut part_nums = vec![];
-        for (y, row_str) in input.lines().enumerate() {
+        for (y, row_str) in s.lines().enumerate() {
             for (x, v) in row_str.chars().enumerate() {
                 if v.is_ascii_digit() {
                     part_nums.push(v);
@@ -68,9 +73,11 @@ impl Schema {
             }
         }
 
-        parsed
+        Ok(parsed)
     }
+}
 
+impl Schema {
     pub fn find_adjacent(&self, sym: &Symbol) -> Vec<&PartIndex> {
         let min_row_limit = if sym.y == 0 { 0 } else { sym.y - 1 };
         let min_col_limit = if sym.x == 0 { 0 } else { sym.x - 1 };
@@ -107,13 +114,19 @@ impl Schema {
 }
 
 pub fn solution_day_03_01(file_path: String) -> Option<usize> {
-    let schema = Schema::parse(&fs::read_to_string(file_path).expect("Invalid File."));
+    let schema: Schema = fs::read_to_string(file_path)
+        .expect("Invalid File.")
+        .parse()
+        .unwrap();
     let res = schema.find_all_valid_parts().map(|p| p.num).sum();
     Some(res)
 }
 
 pub fn solution_day_03_02(file_path: String) -> Option<usize> {
-    let schema = Schema::parse(&fs::read_to_string(file_path).expect("Invalid File."));
+    let schema: Schema = fs::read_to_string(file_path)
+        .expect("Invalid File.")
+        .parse()
+        .unwrap();
     let res = schema
         .symbols
         .iter()

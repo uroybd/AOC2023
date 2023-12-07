@@ -6,9 +6,14 @@ struct Game {
     turn_max: [usize; 3],
 }
 
-impl Game {
-    pub fn from_str(data: &str) -> Self {
-        let (game, turns) = data.split_once(": ").unwrap();
+#[derive(Debug, PartialEq, Eq)]
+struct ParseGameError;
+
+impl std::str::FromStr for Game {
+    type Err = ParseGameError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (game, turns) = s.split_once(": ").unwrap();
         let mut turn_max = [0; 3];
         for color_val in turns.split([';', ',']) {
             let (val, color) = color_val.trim().split_once(' ').unwrap();
@@ -18,12 +23,14 @@ impl Game {
                 _ => turn_max[2] = turn_max[2].max(val.parse::<usize>().unwrap()),
             }
         }
-        Self {
+        Ok(Self {
             id: game.split_once(' ').unwrap().1.parse::<usize>().unwrap(),
             turn_max,
-        }
+        })
     }
+}
 
+impl Game {
     pub fn is_valid(&self, caps: &[usize; 3]) -> bool {
         for (idx, val) in self.turn_max.iter().enumerate() {
             if val > &caps[idx] {
@@ -47,7 +54,7 @@ pub fn solution_day_02_01(file_path: String) -> Option<usize> {
         .expect("Invalid input file.")
         .lines()
         .filter_map(|l| {
-            let g = Game::from_str(l);
+            let g: Game = l.parse().unwrap();
             if g.is_valid(&[12, 14, 13]) {
                 Some(g.id)
             } else {
@@ -62,7 +69,7 @@ pub fn solution_day_02_02(file_path: String) -> Option<usize> {
     let result = fs::read_to_string(file_path)
         .expect("Invalid input file.")
         .lines()
-        .map(|l| Game::from_str(l).power())
+        .map(|l| l.parse::<Game>().unwrap().power())
         .sum();
     Some(result)
 }
