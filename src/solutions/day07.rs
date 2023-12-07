@@ -2,10 +2,10 @@
 
 use std::{collections::HashMap, fs};
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Ord, PartialOrd)]
 struct Card {
-    symbol: char,
     value: usize,
+    symbol: char,
 }
 
 impl Card {
@@ -23,23 +23,11 @@ impl Card {
     }
 }
 
-impl Ord for Card {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.value.cmp(&other.value)
-    }
-}
-
-impl PartialOrd for Card {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 #[derive(PartialEq, Eq)]
 struct Hand {
-    cards: Vec<Card>,
-    bid: usize,
     value: usize,
+    bid: usize,
+    cards: Vec<Card>,
 }
 
 impl Hand {
@@ -80,23 +68,17 @@ impl Hand {
         let value = Hand::get_value(cards.as_slice(), wild);
         Self {
             cards,
-            bid: b.trim().parse().unwrap(),
             value,
+            bid: b.trim().parse().unwrap(),
         }
     }
 }
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        if self.value == other.value {
-            for (s, o) in self.cards.iter().zip(other.cards.iter()) {
-                if s.value != o.value {
-                    return s.cmp(o);
-                }
-            }
-            std::cmp::Ordering::Equal
-        } else {
-            self.value.cmp(&other.value)
+        match self.value.cmp(&other.value) {
+            std::cmp::Ordering::Equal => self.cards.cmp(&other.cards),
+            o => o,
         }
     }
 }
