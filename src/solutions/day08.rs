@@ -76,20 +76,16 @@ impl std::str::FromStr for Map {
 impl Map {
     fn walk(&self, n: &str, tester: impl Fn(&String) -> bool) -> usize {
         let mut steps = 0;
-        let mut cursor = 0;
         let mut current_node = n.to_string();
+        let mut instructions = self.instructions.iter().cycle();
 
         while !tester(&current_node) {
             let val = self.nodes.get(&current_node).unwrap();
-            current_node = match self.instructions[cursor] {
+            current_node = match instructions.next().unwrap() {
                 Direction::Left => val.left.clone(),
                 Direction::Right => val.right.clone(),
             };
             steps += 1;
-            cursor += 1;
-            if cursor >= self.instructions.len() {
-                cursor = 0;
-            }
         }
         steps
     }
