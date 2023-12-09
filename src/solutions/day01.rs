@@ -36,16 +36,14 @@ fn get_converted_value(s: &str) -> u32 {
     }
 }
 
-fn get_calibration_value_extended(val: &str, p: &Regex, rev_p: &Regex) -> u32 {
-    let first = p.find(val).unwrap().as_str();
-    let last: String = rev_p
-        .find(&val.chars().rev().collect::<String>())
-        .unwrap()
-        .as_str()
-        .chars()
-        .rev()
-        .collect();
-    (get_converted_value(first) * 10) + get_converted_value(&last)
+fn get_calibration_value_extended(val: &str, p: &Regex) -> u32 {
+    let mut matches = p.find_iter(val);
+    let first = matches.next().unwrap().as_str();
+    let last = match matches.last() {
+        Some(v) => v.as_str(),
+        None => first,
+    };
+    (get_converted_value(first) * 10) + get_converted_value(last)
 }
 
 pub fn solution_day_01_01(file_path: String) -> Option<u32> {
@@ -61,14 +59,12 @@ pub fn solution_day_01_01(file_path: String) -> Option<u32> {
 pub fn solution_day_01_02(file_path: String) -> Option<u32> {
     let pattern = Regex::new(r"one|two|three|four|five|six|seven|eight|nine|\d")
         .expect("Unable to compile regex");
-    let reverse_pattern = Regex::new(r"enin|thgie|neves|xis|evif|ruof|eerht|owt|eno|\d")
-        .expect("Unable to compile regex");
 
     Some(
         fs::read_to_string(file_path)
             .expect("Invalid File")
             .lines()
-            .map(|l| get_calibration_value_extended(l, &pattern, &reverse_pattern))
+            .map(|l| get_calibration_value_extended(l, &pattern))
             .sum(),
     )
 }
