@@ -39,11 +39,11 @@ fn report(data: &[Vec<isize>], accumulator: fn(isize, &Vec<isize>) -> isize) -> 
 
 pub fn solution_day_09_01(file_path: String) -> Option<isize> {
     let val = parse(&fs::read_to_string(file_path).expect("Invalid Input File."));
-    Some(report(&val, |acc, v| acc + v.last().unwrap()))
+    Some(report(&val, |acc, v| v.last().unwrap() + acc))
 }
 
 pub fn solution_day_09_02(file_path: String) -> Option<isize> {
-    let val: Vec<Vec<isize>> = parse(&fs::read_to_string(file_path).expect("Invalid Input File."));
+    let val = parse(&fs::read_to_string(file_path).expect("Invalid Input File."));
     Some(report(&val, |acc, v| v.first().unwrap() - acc))
 }
 
