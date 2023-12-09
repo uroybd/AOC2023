@@ -25,38 +25,26 @@ fn generate_series(data: &[isize]) -> Vec<Vec<isize>> {
     series
 }
 
-fn report_next(data: &[Vec<isize>]) -> isize {
+fn report(data: &[Vec<isize>], accumulator: fn(isize, &Vec<isize>) -> isize) -> isize {
     data.iter()
         .map(|series: &Vec<isize>| {
             generate_series(series)
                 .iter()
                 .rev()
                 .skip(1)
-                .fold(0, |acc, v| acc + v.last().unwrap())
-        })
-        .sum()
-}
-
-fn report_prev(data: &[Vec<isize>]) -> isize {
-    data.iter()
-        .map(|series| {
-            generate_series(series)
-                .iter()
-                .rev()
-                .skip(1)
-                .fold(0, |acc, v| v.first().unwrap() - acc)
+                .fold(0, accumulator)
         })
         .sum()
 }
 
 pub fn solution_day_09_01(file_path: String) -> Option<isize> {
     let val = parse(&fs::read_to_string(file_path).expect("Invalid Input File."));
-    Some(report_next(&val))
+    Some(report(&val, |acc, v| acc + v.last().unwrap()))
 }
 
 pub fn solution_day_09_02(file_path: String) -> Option<isize> {
-    let val = parse(&fs::read_to_string(file_path).expect("Invalid Input File."));
-    Some(report_prev(&val))
+    let val: Vec<Vec<isize>> = parse(&fs::read_to_string(file_path).expect("Invalid Input File."));
+    Some(report(&val, |acc, v| v.first().unwrap() - acc))
 }
 
 #[cfg(test)]
