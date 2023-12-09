@@ -14,15 +14,18 @@ impl std::str::FromStr for Game {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (game, turns) = s.split_once(": ").unwrap();
-        let mut turn_max = [0; 3];
-        for color_val in turns.split([';', ',']) {
-            let (val, color) = color_val.trim().split_once(' ').unwrap();
-            match color {
-                "red" => turn_max[0] = turn_max[0].max(val.parse::<usize>().unwrap()),
-                "blue" => turn_max[1] = turn_max[1].max(val.parse::<usize>().unwrap()),
-                _ => turn_max[2] = turn_max[2].max(val.parse::<usize>().unwrap()),
-            }
-        }
+        let turn_max = turns.split([';', ',']).fold([0; 3], |mut rec, cdef| {
+            let (val, color) = cdef.trim().split_once(' ').unwrap();
+            let val = val.parse::<usize>().unwrap();
+            let idx = match color {
+                "red" => 0,
+                "blue" => 1,
+                "green" => 2,
+                _ => unreachable!(),
+            };
+            rec[idx] = rec[idx].max(val);
+            rec
+        });
         Ok(Self {
             id: game.split_once(' ').unwrap().1.parse::<usize>().unwrap(),
             turn_max,
