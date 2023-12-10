@@ -1,6 +1,6 @@
 use num::integer::lcm;
+use rayon::prelude::*;
 use std::{collections::HashMap, fs};
-
 // Advent of Code 2023 - Day 08
 
 #[derive(Debug)]
@@ -99,8 +99,10 @@ impl Map {
             .keys()
             .clone()
             .filter(|k| k.ends_with('A'))
+            .par_bridge()
+            .into_par_iter()
             .map(|v| self.walk(v, |x| x.ends_with('Z')))
-            .reduce(lcm)
+            .reduce_with(lcm)
             .unwrap()
     }
 }

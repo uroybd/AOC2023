@@ -1,5 +1,5 @@
+use rayon::prelude::*;
 use std::{collections::HashMap, fs};
-
 // Advent of Code 2023 - Day 07
 
 #[derive(PartialEq, Eq, Ord, PartialOrd)]
@@ -63,7 +63,7 @@ impl Hand {
 pub fn get_total(file_path: String, wild: bool) -> Option<usize> {
     let mut hands: Vec<Hand> = fs::read_to_string(file_path)
         .expect("Invalid Input File.")
-        .lines()
+        .par_lines()
         .map(|l| Hand::from_str(l, wild))
         .collect();
     hands.sort();

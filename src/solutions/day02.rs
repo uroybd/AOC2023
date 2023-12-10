@@ -1,5 +1,4 @@
 use std::fs;
-
 // Advent of Code 2023 - Day 02
 struct Game {
     id: usize,
