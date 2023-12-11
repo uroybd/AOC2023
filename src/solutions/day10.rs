@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{HashMap, HashSet, VecDeque},
     fs,
 };
 
@@ -57,6 +57,11 @@ impl std::str::FromStr for GroundMap {
     }
 }
 
+const VALID_TOP: [char; 3] = ['|', 'F', '7'];
+const VALID_BOTTOM: [char; 3] = ['|', 'L', 'J'];
+const VALID_LEFT: [char; 3] = ['-', 'F', 'L'];
+const VALID_RIGHT: [char; 3] = ['-', '7', 'J'];
+
 impl GroundMap {
     fn top(&self, current: &Terrain) -> Option<&Terrain> {
         if current.y != 0 {
@@ -64,7 +69,7 @@ impl GroundMap {
                 .terrains
                 .get(&format!("{:?}x{:?}", current.x, current.y - 1))
             {
-                if ['|', 'F', '7'].contains(&v.kind) {
+                if VALID_TOP.contains(&v.kind) {
                     return Some(v);
                 }
             }
@@ -78,7 +83,7 @@ impl GroundMap {
                 .terrains
                 .get(&format!("{:?}x{:?}", current.x, current.y + 1))
             {
-                if ['|', 'L', 'J'].contains(&v.kind) {
+                if VALID_BOTTOM.contains(&v.kind) {
                     return Some(v);
                 }
             }
@@ -92,7 +97,7 @@ impl GroundMap {
                 .terrains
                 .get(&format!("{:?}x{:?}", current.x - 1, current.y))
             {
-                if ['-', 'F', 'L'].contains(&v.kind) {
+                if VALID_LEFT.contains(&v.kind) {
                     return Some(v);
                 }
             }
@@ -106,7 +111,7 @@ impl GroundMap {
                 .terrains
                 .get(&format!("{:?}x{:?}", current.x + 1, current.y))
             {
-                if ['-', '7', 'J'].contains(&v.kind) {
+                if VALID_RIGHT.contains(&v.kind) {
                     return Some(v);
                 }
             }
@@ -127,12 +132,12 @@ impl GroundMap {
         .collect::<Vec<Option<char>>>();
 
         let kind = match possible.as_slice() {
-            [_, _, Some('-' | 'F' | 'L'), Some('-' | '7' | 'J')] => '-',
-            [Some('|' | 'F' | '7'), Some('|' | 'L' | 'J')] => '|',
-            [_, Some('|' | 'L' | 'J'), _, Some('-' | '7' | 'J')] => 'F',
-            [Some('|' | 'F' | '&'), _, _, Some('-' | '7' | 'J')] => 'L',
-            [_, Some('|' | 'L' | 'J'), Some('-' | 'F' | 'L'), _] => '7',
-            [Some('|' | 'F' | '7'), _, Some('-' | 'L' | 'F'), _] => 'J',
+            [_, _, Some(_), Some(_)] => '-',
+            [Some(_), Some(_), _, _] => '|',
+            [_, Some(_), _, Some(_)] => 'F',
+            [Some(_), _, _, Some(_)] => 'L',
+            [_, Some(_), Some(_), _] => '7',
+            [Some(_), _, Some(_), _] => 'J',
             _ => unreachable!(),
         };
         Terrain {
@@ -198,7 +203,7 @@ impl GroundMap {
         possible
     }
 
-    fn walk(&self) -> Vec<Terrain> {
+    fn find_largest_loop(&self) -> Vec<Terrain> {
         let mut current = *self
             .accessible(&self.get_actual_start_type())
             .first()
@@ -260,7 +265,7 @@ impl GroundMap {
     fn count_enclosed(&self, area: &Vec<Terrain>) -> usize {
         let mut marked: GroundMap = self.clone();
         let mut prev = self.start.clone();
-        let mut to_mark = vec![];
+        let mut to_mark = VecDeque::with_capacity(self.width * self.height);
         let pipe_set: HashSet<(usize, usize)> = area.iter().map(|t| (t.x, t.y)).collect();
         for p in area {
             let curr = p.clone();
@@ -269,27 +274,26 @@ impl GroundMap {
                 curr.y as isize - prev.y as isize,
             ) {
                 (1, 0) => {
-                    to_mark.push((p.x, p.y + 1));
-                    to_mark.push((p.x.wrapping_sub(1), p.y + 1));
+                    to_mark.extend([(p.x, p.y + 1), (p.x.wrapping_sub(1), p.y + 1)]);
                 }
                 (0, 1) => {
-                    to_mark.push((p.x.wrapping_sub(1), p.y.wrapping_sub(1)));
-                    to_mark.push((p.x.wrapping_sub(1), p.y));
+                    to_mark.extend([
+                        (p.x.wrapping_sub(1), p.y.wrapping_sub(1)),
+                        (p.x.wrapping_sub(1), p.y),
+                    ]);
                 }
                 (-1, 0) => {
-                    to_mark.push((p.x, p.y.wrapping_sub(1)));
-                    to_mark.push((p.x + 1, p.y.wrapping_sub(1)));
+                    to_mark.extend([(p.x, p.y.wrapping_sub(1)), (p.x + 1, p.y.wrapping_sub(1))]);
                 }
                 (0, -1) => {
-                    to_mark.push((p.x + 1, p.y));
-                    to_mark.push((p.x + 1, p.y + 1));
+                    to_mark.extend([(p.x + 1, p.y), (p.x + 1, p.y + 1)]);
                 }
                 _ => {}
             }
             prev = curr.clone();
         }
 
-        while let Some(p) = to_mark.pop() {
+        while let Some(p) = to_mark.pop_front() {
             to_mark.extend(marked.search_and_mark(p, &pipe_set));
         }
         let mut marked_count = marked.terrains.values().filter(|t| t.kind == 'X').count();
@@ -309,7 +313,7 @@ pub fn solution_day_10_01(file_path: String) -> Option<usize> {
         .expect("Invalid File")
         .parse::<GroundMap>()
         .unwrap();
-    let pipes = ground_map.walk();
+    let pipes = ground_map.find_largest_loop();
     let val = pipes.len();
     Some((val / 2) + (val % 2))
 }
@@ -319,7 +323,7 @@ pub fn solution_day_10_02(file_path: String) -> Option<usize> {
         .expect("Invalid File")
         .parse::<GroundMap>()
         .unwrap();
-    let pipes = ground_map.walk();
+    let pipes = ground_map.find_largest_loop();
     Some(ground_map.count_enclosed(&pipes))
 }
 
