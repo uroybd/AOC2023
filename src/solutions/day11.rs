@@ -75,7 +75,7 @@ impl Observation {
         xs + ys
     }
 
-    fn get_all_galaxy_distances(&self, multiplier: usize) -> Vec<usize> {
+    fn get_all_galaxy_distances(&self, multiplier: usize) -> usize {
         let mut galaxies = vec![];
         for x in 0..self.width {
             for y in 0..self.height {
@@ -84,13 +84,12 @@ impl Observation {
                 }
             }
         }
-        let mut distances = vec![];
+        let mut distances = 0;
         while let Some(v) = galaxies.pop() {
-            let calculated: Vec<usize> = galaxies
+            distances += galaxies
                 .par_iter()
                 .map(|p| self.calculate_distance(p, &v, multiplier))
-                .collect();
-            distances.extend(calculated);
+                .sum::<usize>();
         }
         distances
     }
@@ -101,7 +100,7 @@ pub fn solution_day_11(file_path: String, multiplier: usize) -> Option<usize> {
         .expect("Invalid File")
         .parse()
         .unwrap();
-    Some(data.get_all_galaxy_distances(multiplier).iter().sum())
+    Some(data.get_all_galaxy_distances(multiplier))
 }
 
 #[cfg(test)]
