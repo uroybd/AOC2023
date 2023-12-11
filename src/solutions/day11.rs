@@ -4,11 +4,9 @@ use rayon::prelude::*;
 use std::fs;
 
 struct Observation {
-    data: Vec<Vec<char>>,
+    galaxies: Vec<(usize, usize)>,
     empty_rows: Vec<usize>,
     empty_cols: Vec<usize>,
-    width: usize,
-    height: usize,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -20,9 +18,16 @@ impl std::str::FromStr for Observation {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let data: Vec<Vec<char>> = s.lines().map(|l| l.chars().collect()).collect();
 
-        let width = data[0].len();
-        let height = data.len();
-        let empty_cols = (0..width)
+        let galaxies: Vec<(usize, usize)> = data
+            .iter()
+            .enumerate()
+            .flat_map(|(y, row)| {
+                row.iter()
+                    .enumerate()
+                    .filter_map(move |(x, c)| if *c == '#' { Some((x, y)) } else { None })
+            })
+            .collect();
+        let empty_cols = (0..data[0].len())
             .filter(|i| data.iter().all(|row| row[*i] == '.'))
             .collect();
         let empty_rows = data
@@ -38,9 +43,7 @@ impl std::str::FromStr for Observation {
             .collect();
 
         Ok(Observation {
-            data,
-            width,
-            height,
+            galaxies,
             empty_cols,
             empty_rows,
         })
@@ -75,14 +78,8 @@ impl Observation {
     }
 
     fn get_all_galaxy_distances(&self, multiplier: usize) -> usize {
-        let mut galaxies = vec![];
-        for x in 0..self.width {
-            for y in 0..self.height {
-                if self.data[y][x] == '#' {
-                    galaxies.push((x, y));
-                }
-            }
-        }
+        let mut galaxies = self.galaxies.clone();
+
         let mut distances = 0;
         while let Some(v) = galaxies.pop() {
             distances += galaxies
