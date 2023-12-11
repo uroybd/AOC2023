@@ -54,25 +54,24 @@ impl Observation {
         p2: &(usize, usize),
         multiplier: usize,
     ) -> usize {
-        let xs: usize = ((p1.0.min(p2.0) + 1)..(p1.0.max(p2.0) + 1))
-            .map(|x| {
-                if self.empty_cols.contains(&x) {
-                    multiplier
-                } else {
-                    1
-                }
-            })
-            .sum();
-        let ys: usize = ((p1.1.min(p2.1) + 1)..(p1.1.max(p2.1) + 1))
-            .map(|y| {
-                if self.empty_rows.contains(&y) {
-                    multiplier
-                } else {
-                    1
-                }
-            })
-            .sum();
-        xs + ys
+        let mut xs = [p1.0, p2.0];
+        xs.sort();
+
+        let mut ys = [p1.1, p2.1];
+        ys.sort();
+
+        let expanded = self
+            .empty_cols
+            .iter()
+            .filter(|x| x >= &&(xs[0] + 1) && x <= &&xs[1])
+            .count()
+            + self
+                .empty_rows
+                .iter()
+                .filter(|y| y >= &&(ys[0] + 1) && y <= &&ys[1])
+                .count();
+
+        xs[1].abs_diff(xs[0]) + ys[1].abs_diff(ys[0]) + (expanded * multiplier) - expanded
     }
 
     fn get_all_galaxy_distances(&self, multiplier: usize) -> usize {
