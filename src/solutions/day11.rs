@@ -28,17 +28,15 @@ impl std::str::FromStr for Observation {
                 }
             }
         }
-        let empty_cols = (*xs.first().unwrap()..=*xs.last().unwrap())
-            .filter(|i| !xs.contains(i))
-            .collect();
 
-        let empty_rows = (*ys.first().unwrap()..=*ys.last().unwrap())
-            .filter(|i| !ys.contains(i))
-            .collect();
         Ok(Observation {
             galaxies,
-            empty_cols,
-            empty_rows,
+            empty_cols: (*xs.first().unwrap()..=*xs.last().unwrap())
+                .filter(|i| !xs.contains(i))
+                .collect(),
+            empty_rows: (*ys.first().unwrap()..=*ys.last().unwrap())
+                .filter(|i| !ys.contains(i))
+                .collect(),
         })
     }
 }
@@ -50,10 +48,8 @@ impl Observation {
         p2: &(usize, usize),
         multiplier: usize,
     ) -> usize {
-        let mut xs = [p1.0, p2.0];
+        let (mut xs, mut ys) = ([p1.0, p2.0], [p1.1, p2.1]);
         xs.sort();
-
-        let mut ys = [p1.1, p2.1];
         ys.sort();
 
         let expanded = self
