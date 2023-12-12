@@ -46,9 +46,16 @@ fn find_combinations(inp: &str, report: &[usize], cache: &mut HashMap<String, us
                 + find_combinations(&inp.replacen('?', "#", 1), report, cache)
         }
         Some('#') => {
+            // First checking if the report is empty
+            // Or if the current input is smaller than first candidate
+            // Or if the input's substring from 0 to first candidate contains a '.'
+            // And returning 0
             if report.is_empty() || inp.len() < report[0] || inp[0..report[0]].contains('.') {
                 0
             } else if report.len() > 1 {
+                // Check if input has padding to the right
+                // Or if the input's substring from first candidate to end contains a '#'
+                // And returning 0
                 if (inp.len() < report[0] + 1) || (inp.chars().nth(report[0]).unwrap() == '#') {
                     0
                 } else {
