@@ -4,20 +4,18 @@ pub struct Point {
     pub y: usize,
 }
 
-impl Point {
-    pub fn from_comma_separated(data_string: String) -> Point {
-        let pair: Vec<usize> = data_string
-            .split(',')
-            .map(|x| x.parse::<usize>().unwrap())
-            .collect();
-        Point {
+#[derive(Debug, PartialEq, Eq)]
+pub struct ParsePointError;
+
+impl std::str::FromStr for Point {
+    type Err = ParsePointError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let pair: Vec<usize> = s.split(',').map(|x| x.parse::<usize>().unwrap()).collect();
+        Ok(Point {
             x: pair[0],
             y: pair[1],
-        }
-    }
-
-    pub fn get_hash_key(&self) -> String {
-        format!("{}x{}", self.x, self.y)
+        })
     }
 }
 
@@ -27,17 +25,24 @@ pub struct Line {
     pub b: Point,
 }
 
-impl Line {
-    pub fn from_arrowed_pair(data_string: &str) -> Line {
-        let mut pair: Vec<Point> = data_string
-            .split(" -> ")
-            .map(|x| Point::from_comma_separated(x.to_string()))
-            .collect();
+#[derive(Debug, PartialEq, Eq)]
+pub struct ParseLineError;
 
-        Line {
+impl std::str::FromStr for Line {
+    type Err = ParseLineError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut pair: Vec<Point> = s.split(" -> ").map(|x| x.parse().unwrap()).collect();
+        Ok(Line {
             a: pair.remove(0),
             b: pair.remove(0),
-        }
+        })
+    }
+}
+
+impl Line {
+    pub fn new(a: Point, b: Point) -> Self {
+        Line { a, b }
     }
 
     pub fn create_line_series(&self, allow_diagonal: bool) -> Vec<Point> {
