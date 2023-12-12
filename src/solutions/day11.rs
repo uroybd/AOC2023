@@ -1,7 +1,6 @@
 // Advent of Code 2023 - Day 11
 
-use rayon::prelude::*;
-use std::fs;
+use std::{collections::BTreeSet, fs};
 
 struct Observation {
     galaxies: Vec<(usize, usize)>,
@@ -16,32 +15,26 @@ impl std::str::FromStr for Observation {
     type Err = ParseObservationError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let data: Vec<Vec<char>> = s.lines().map(|l| l.chars().collect()).collect();
+        let mut galaxies: Vec<(usize, usize)> = vec![];
+        let mut xs: BTreeSet<usize> = BTreeSet::new();
+        let mut ys: BTreeSet<usize> = BTreeSet::new();
 
-        let galaxies: Vec<(usize, usize)> = data
-            .iter()
-            .enumerate()
-            .flat_map(|(y, row)| {
-                row.iter()
-                    .enumerate()
-                    .filter_map(move |(x, c)| if *c == '#' { Some((x, y)) } else { None })
-            })
-            .collect();
-        let empty_cols = (0..data[0].len())
-            .filter(|i| data.iter().all(|row| row[*i] == '.'))
-            .collect();
-        let empty_rows = data
-            .iter()
-            .enumerate()
-            .filter_map(|(i, row)| {
-                if row.iter().all(|c| *c == '.') {
-                    Some(i)
-                } else {
-                    None
+        for (y, row) in s.lines().enumerate() {
+            for (x, c) in row.chars().enumerate() {
+                if c == '#' {
+                    galaxies.push((x, y));
+                    xs.insert(x);
+                    ys.insert(y);
                 }
-            })
+            }
+        }
+        let empty_cols = (*xs.first().unwrap()..=*xs.last().unwrap())
+            .filter(|i| !xs.contains(i))
             .collect();
 
+        let empty_rows = (*ys.first().unwrap()..=*ys.last().unwrap())
+            .filter(|i| !ys.contains(i))
+            .collect();
         Ok(Observation {
             galaxies,
             empty_cols,
@@ -83,7 +76,7 @@ impl Observation {
         let mut distances = 0;
         while let Some(v) = galaxies.pop() {
             distances += galaxies
-                .par_iter()
+                .iter()
                 .map(|p| self.calculate_distance(p, &v, multiplier))
                 .sum::<usize>();
         }
