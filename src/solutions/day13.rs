@@ -1,5 +1,6 @@
 // Advent of Code 2023 - Day 13
 
+use rayon::prelude::*;
 use std::fs;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -99,15 +100,14 @@ impl Mirror {
             let (left, right) = self.split_v(i);
             let right = right.flip_v();
             let min = left[0].len().min(right[0].len());
-            let mut left_data: Vec<Vec<char>> = Vec::new();
-            let mut right_data: Vec<Vec<char>> = Vec::new();
-            for row in left.iter() {
-                left_data.push(row[row.len() - min..].to_vec());
-            }
-            for row in right.iter() {
-                right_data.push(row[row.len() - min..].to_vec());
-            }
-
+            let left_data: Vec<Vec<char>> = left
+                .iter()
+                .map(|row| row[row.len() - min..].to_vec())
+                .collect();
+            let right_data: Vec<Vec<char>> = right
+                .iter()
+                .map(|row| row[row.len() - min..].to_vec())
+                .collect();
             if symmetry_with_error(&left_data, &right_data, margin) {
                 return Some((left, right));
             }
@@ -141,6 +141,7 @@ pub fn solution_day_13_01(file_path: String) -> Option<usize> {
     let result = fs::read_to_string(file_path)
         .expect("Invalid Input file.")
         .split("\n\n")
+        .par_bridge()
         .map(|l| l.parse::<Mirror>().unwrap().score(0))
         .sum();
     Some(result)
@@ -150,6 +151,7 @@ pub fn solution_day_13_02(file_path: String) -> Option<usize> {
     let result = fs::read_to_string(file_path)
         .expect("Invalid Input file.")
         .split("\n\n")
+        .par_bridge()
         .map(|l| l.parse::<Mirror>().unwrap().score(1))
         .sum();
     Some(result)
