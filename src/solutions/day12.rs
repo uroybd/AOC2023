@@ -2,10 +2,7 @@
 use std::{collections::HashMap, fs};
 
 #[derive(Debug, Clone)]
-struct DamageReport {
-    map: String,
-    report: Vec<usize>,
-}
+struct DamageReport(String, Vec<usize>);
 
 #[derive(Debug, PartialEq, Eq)]
 struct ParseDamageReportError;
@@ -15,10 +12,10 @@ impl std::str::FromStr for DamageReport {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (map, report) = s.split_once(' ').unwrap();
-        Ok(DamageReport {
-            map: map.to_string(),
-            report: report.split(',').map(|x| x.parse().unwrap()).collect(),
-        })
+        Ok(DamageReport(
+            map.to_string(),
+            report.split(',').map(|x| x.parse().unwrap()).collect(),
+        ))
     }
 }
 
@@ -40,6 +37,8 @@ fn find_combinations(inp: &str, report: &[usize], cache: &mut HashMap<String, us
         return *cache.get(&key).unwrap();
     }
     let result = match inp.chars().next() {
+        None if report.is_empty() => 1,
+        None => 0,
         Some('.') => find_combinations(inp.strip_prefix('.').unwrap(), report, cache),
         Some('?') => {
             find_combinations(&inp.replacen('?', ".", 1), report, cache)
@@ -65,13 +64,6 @@ fn find_combinations(inp: &str, report: &[usize], cache: &mut HashMap<String, us
                 find_combinations(&inp[report[0]..], &report[1..], cache)
             }
         }
-        None => {
-            if report.is_empty() {
-                1
-            } else {
-                0
-            }
-        }
         _ => unreachable!(),
     };
     cache.insert(key.clone(), result);
@@ -79,36 +71,32 @@ fn find_combinations(inp: &str, report: &[usize], cache: &mut HashMap<String, us
 }
 
 pub fn solution_day_12_01(file_path: String) -> Option<usize> {
-    let data: Vec<DamageReport> = fs::read_to_string(file_path)
+    let mut cache = HashMap::new();
+    let total = fs::read_to_string(file_path)
         .expect("Invalid File")
         .lines()
-        .map(|x| x.parse().unwrap())
-        .collect();
-    let mut cache = HashMap::new();
-    Some(
-        data.iter()
-            .map(|x| find_combinations(&x.map, &x.report, &mut cache))
-            .sum::<usize>(),
-    )
-    // None
+        .map(|x| {
+            let entry = x.parse::<DamageReport>().unwrap();
+            find_combinations(&entry.0, &entry.1, &mut cache)
+        })
+        .sum();
+
+    Some(total)
 }
 
 pub fn solution_day_12_02(file_path: String) -> Option<usize> {
-    let data: Vec<DamageReport> = fs::read_to_string(file_path)
+    let mut cache = HashMap::new();
+    let total = fs::read_to_string(file_path)
         .expect("Invalid File")
         .lines()
-        .map(|x| x.parse().unwrap())
-        .collect();
-    let mut cache = HashMap::new();
-    Some(
-        data.iter()
-            .map(|x| {
-                let map = [x.map.as_str(); 5].join("?");
-                let report = x.report.repeat(5);
-                find_combinations(&map, &report, &mut cache)
-            })
-            .sum::<usize>(),
-    )
+        .map(|x| {
+            let entry = x.parse::<DamageReport>().unwrap();
+            let map = [entry.0.as_str(); 5].join("?");
+            let report = entry.1.repeat(5);
+            find_combinations(&map, &report, &mut cache)
+        })
+        .sum();
+    Some(total)
 }
 
 #[cfg(test)]
