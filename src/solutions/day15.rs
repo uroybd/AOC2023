@@ -1,6 +1,6 @@
-use std::{collections::HashMap, fs};
-
 // Advent of Code 2023 - Day 15
+
+use std::{collections::HashMap, fs};
 
 fn get_hash(seq: &str) -> usize {
     let res = seq
@@ -114,7 +114,7 @@ pub fn solution_day_15_01(file_path: String) -> Option<usize> {
     let res = fs::read_to_string(file_path)
         .expect("Invalid Input File.")
         .lines()
-        .flat_map(|l| l.split(',').map(|x| get_hash(x)))
+        .flat_map(|l| l.split(',').map(get_hash))
         .sum::<usize>();
     Some(res)
 }
