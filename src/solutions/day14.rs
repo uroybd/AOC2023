@@ -56,7 +56,6 @@ impl Platform {
                                 _ => (),
                             }
                         }
-
                         let old = self[move_to][x];
                         self[move_to][x] = 'O';
                         self[y][x] = old;
