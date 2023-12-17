@@ -108,20 +108,15 @@ impl Graph {
             };
             boundary.push(Record(0, cursor));
         }
-        // println!("{:?}", boundary);
         while let Some(Record(val, cursor)) = boundary.pop() {
             if bests.contains_key(&cursor) {
                 continue;
             }
-            // println!("c: {:?}", cursor);
             bests.insert(cursor.clone(), val);
             for next in self.find_neighbors(&cursor, min_moves, max_moves) {
                 if !bests.contains_key(&next) {
-                    // println!("n: {:?}", next);
                     let val = bests.get(&cursor).unwrap() + self.nodes[next.pos.1][next.pos.0];
-                    let new_rec = Record(val, next);
-                    // println!("v: {:?}", new_rec);
-                    boundary.push(new_rec);
+                    boundary.push(Record(val, next));
                 }
             }
         }
