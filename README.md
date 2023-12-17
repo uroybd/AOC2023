@@ -36,7 +36,8 @@ Shamelessly stole and adapted [the scaffolding mechanism found here](https://git
 | **Day 13** | 482.00μs | 488.49μs | 970.49μs |
 | **Day 14** | 45.87μs | 27.08ms | 27.12ms |
 | **Day 16** | 1.73ms | 77.99ms | 79.73ms |
+| **Day 17** | 121.59ms | 355.44ms | 477.03ms |
 
 
-**Total runtime: 731.30ms**
+**Total runtime: 1.21s**
 

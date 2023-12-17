@@ -55,7 +55,7 @@ impl std::str::FromStr for MirrorRoom {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let room: Vec<Vec<RoomTile>> = s
             .lines()
-            .map(|l| l.chars().map(|c| RoomTile::from(c)).collect())
+            .map(|l| l.chars().map(RoomTile::from).collect())
             .collect();
         let width = room[0].len() as isize;
         let height = room.len() as isize;
@@ -70,33 +70,32 @@ impl std::str::FromStr for MirrorRoom {
 impl MirrorRoom {
     fn get_next_photon(&self, photon: &Photon) -> Option<Vec<Photon>> {
         let (x, y) = photon.position;
-        let new_pos;
-        match photon.direction {
+        let new_pos = match photon.direction {
             MovementDirection::Rightward => {
                 if x + 1 == self.width {
                     return None;
                 }
-                new_pos = (x + 1, y);
+                (x + 1, y)
             }
             MovementDirection::LeftWard => {
                 if x == 0 {
                     return None;
                 }
-                new_pos = (x - 1, y);
+                (x - 1, y)
             }
             MovementDirection::Upward => {
                 if y == 0 {
                     return None;
                 }
-                new_pos = (x, y - 1);
+                (x, y - 1)
             }
             MovementDirection::Downward => {
                 if y + 1 == self.height {
                     return None;
                 }
-                new_pos = (x, y + 1);
+                (x, y + 1)
             }
-        }
+        };
         let tile = &self.room[new_pos.1 as usize][new_pos.0 as usize];
 
         match tile {
@@ -203,35 +202,6 @@ impl MirrorRoom {
         }
     }
 
-    fn print_photons(&self, photons: &Vec<Photon>) {
-        let mut room: Vec<Vec<char>> = self
-            .room
-            .iter()
-            .map(|l| {
-                l.iter()
-                    .map(|t| match t {
-                        RoomTile::Empty => '.',
-                        RoomTile::RightTiltedMirror => '/',
-                        RoomTile::LeftTiltedMirror => '\\',
-                        RoomTile::VerticalSplitter => '|',
-                        RoomTile::HorizontalSplitter => '-',
-                    })
-                    .collect()
-            })
-            .collect();
-        for photon in photons {
-            room[photon.position.1 as usize][photon.position.0 as usize] = match photon.direction {
-                MovementDirection::Rightward => '>',
-                MovementDirection::LeftWard => '<',
-                MovementDirection::Upward => '^',
-                MovementDirection::Downward => 'v',
-            }
-        }
-        for l in room {
-            println!("{}", l.iter().collect::<String>());
-        }
-    }
-
     fn find_photons(&self, starter: &Photon) -> usize {
         let mut available = vec![];
         let mut seen = HashSet::new();
@@ -305,28 +275,6 @@ pub fn solution_day_16_02(file_path: String) -> Option<usize> {
             .unwrap()
             .max(receiver2.iter().max().unwrap()),
     )
-
-    // for x in (0..mirror_room.width).into_par_iter() {
-    //     vals.push(mirror_room.find_photons(&Photon {
-    //         position: (x, -1),
-    //         direction: MovementDirection::Downward,
-    //     }));
-    //     vals.push(mirror_room.find_photons(&Photon {
-    //         position: (x, mirror_room.height),
-    //         direction: MovementDirection::Upward,
-    //     }));
-    // }
-    // for y in 0..mirror_room.height {
-    //     vals.push(mirror_room.find_photons(&Photon {
-    //         position: (-1, y),
-    //         direction: MovementDirection::Rightward,
-    //     }));
-    //     vals.push(mirror_room.find_photons(&Photon {
-    //         position: (mirror_room.width, y),
-    //         direction: MovementDirection::LeftWard,
-    //     }));
-    // }
-    // Some(*vals.iter().max().unwrap())
 }
 
 #[cfg(test)]
