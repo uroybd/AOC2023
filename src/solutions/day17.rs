@@ -74,10 +74,7 @@ impl Graph {
             if dir == cursor.dir {
                 moves_so_far += cursor.con_moves;
             }
-            if moves_so_far > max_moves {
-                continue;
-            }
-            if -dir.0 == cursor.dir.0 && -dir.1 == cursor.dir.1 {
+            if moves_so_far > max_moves || (-dir.0 == cursor.dir.0 && -dir.1 == cursor.dir.1) {
                 continue;
             }
             let (nx, ny) = (x as isize + dir.0, y as isize + dir.1);

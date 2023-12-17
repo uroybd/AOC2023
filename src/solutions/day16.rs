@@ -97,109 +97,47 @@ impl MirrorRoom {
             }
         };
         let tile = &self.room[new_pos.1 as usize][new_pos.0 as usize];
+        let mut directions = vec![];
 
         match tile {
-            RoomTile::Empty => Some(vec![Photon {
-                position: new_pos,
-                direction: photon.direction.clone(),
-            }]),
-            RoomTile::RightTiltedMirror => match photon.direction {
-                MovementDirection::Rightward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Upward,
-                }]),
-                MovementDirection::LeftWard => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Downward,
-                }]),
-                MovementDirection::Upward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Rightward,
-                }]),
-                MovementDirection::Downward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::LeftWard,
-                }]),
+            RoomTile::Empty => directions.push(photon.direction.clone()),
+            RoomTile::RightTiltedMirror => directions.push(match photon.direction {
+                MovementDirection::Rightward => MovementDirection::Upward,
+                MovementDirection::LeftWard => MovementDirection::Downward,
+                MovementDirection::Upward => MovementDirection::Rightward,
+                MovementDirection::Downward => MovementDirection::LeftWard,
+            }),
+            RoomTile::LeftTiltedMirror => directions.push(match photon.direction {
+                MovementDirection::Rightward => MovementDirection::Downward,
+                MovementDirection::LeftWard => MovementDirection::Upward,
+                MovementDirection::Upward => MovementDirection::LeftWard,
+                MovementDirection::Downward => MovementDirection::Rightward,
+            }),
+            RoomTile::VerticalSplitter => match &photon.direction {
+                MovementDirection::Rightward | MovementDirection::LeftWard => {
+                    directions.extend([MovementDirection::Upward, MovementDirection::Downward])
+                }
+                dir => directions.push(dir.clone()),
             },
-            RoomTile::LeftTiltedMirror => match photon.direction {
-                MovementDirection::Rightward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Downward,
-                }]),
-                MovementDirection::LeftWard => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Upward,
-                }]),
-                MovementDirection::Upward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::LeftWard,
-                }]),
-                MovementDirection::Downward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Rightward,
-                }]),
-            },
-            RoomTile::VerticalSplitter => match photon.direction {
-                MovementDirection::Rightward => Some(vec![
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::Upward,
-                    },
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::Downward,
-                    },
-                ]),
-                MovementDirection::LeftWard => Some(vec![
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::Upward,
-                    },
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::Downward,
-                    },
-                ]),
-                MovementDirection::Upward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Upward,
-                }]),
-                MovementDirection::Downward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Downward,
-                }]),
-            },
-            RoomTile::HorizontalSplitter => match photon.direction {
-                MovementDirection::Rightward => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::Rightward,
-                }]),
-                MovementDirection::LeftWard => Some(vec![Photon {
-                    position: new_pos,
-                    direction: MovementDirection::LeftWard,
-                }]),
-                MovementDirection::Upward => Some(vec![
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::LeftWard,
-                    },
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::Rightward,
-                    },
-                ]),
-                MovementDirection::Downward => Some(vec![
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::LeftWard,
-                    },
-                    Photon {
-                        position: new_pos,
-                        direction: MovementDirection::Rightward,
-                    },
-                ]),
+            RoomTile::HorizontalSplitter => match &photon.direction {
+                MovementDirection::Upward | MovementDirection::Downward => {
+                    directions.extend([MovementDirection::Rightward, MovementDirection::LeftWard])
+                }
+                dir => directions.push(dir.clone()),
             },
         }
+        if directions.is_empty() {
+            return None;
+        }
+        Some(
+            directions
+                .into_iter()
+                .map(|dir| Photon {
+                    position: new_pos,
+                    direction: dir,
+                })
+                .collect(),
+        )
     }
 
     fn find_photons(&self, starter: &Photon) -> usize {
