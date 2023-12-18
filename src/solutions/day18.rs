@@ -4,8 +4,8 @@ use std::fs;
 
 struct Instruction {
     dir: u8,
-    len: u64,
-    c: u32,
+    len: usize,
+    c: usize,
 }
 
 impl std::str::FromStr for Instruction {
@@ -20,8 +20,8 @@ impl std::str::FromStr for Instruction {
             "U" => 3,
             _ => unreachable!(),
         };
-        let len = s.next().unwrap().parse::<u64>().unwrap();
-        let c = u32::from_str_radix(
+        let len = s.next().unwrap().parse::<usize>().unwrap();
+        let c = usize::from_str_radix(
             s.next()
                 .unwrap()
                 .trim_matches(|s| s == '(' || s == ')' || s == '#'),
@@ -33,7 +33,7 @@ impl std::str::FromStr for Instruction {
     }
 }
 
-fn get_end(start: (i64, i64), dir: u8, len: u64) -> (i64, i64) {
+fn get_end(start: (isize, isize), dir: u8, len: usize) -> (isize, isize) {
     match dir {
         0 => (start.0.wrapping_add_unsigned(len), start.1),
         1 => (start.0, start.1.wrapping_add_unsigned(len)),
@@ -44,20 +44,23 @@ fn get_end(start: (i64, i64), dir: u8, len: u64) -> (i64, i64) {
 }
 
 impl Instruction {
-    fn get_vector(&self) -> (u8, u64) {
+    fn get_vector(&self) -> (u8, usize) {
         (self.dir, self.len)
     }
 
-    fn get_vector_from_color(&self) -> (u8, u64) {
-        ((self.c & 3) as u8, (self.c >> 4) as u64)
+    fn get_vector_from_color(&self) -> (u8, usize) {
+        ((self.c & 3) as u8, (self.c >> 4) as usize)
     }
 }
 
-fn shoelace_area(instructions: &[Instruction], vector_func: fn(&Instruction) -> (u8, u64)) -> u64 {
+fn shoelace_area(
+    instructions: &[Instruction],
+    vector_func: fn(&Instruction) -> (u8, usize),
+) -> usize {
     let mut perimeter = 0;
     let mut sum = 0;
     let mut prev = (0, 0);
-    for i in instructions.iter() {
+    for i in instructions {
         let (dir, len) = vector_func(i);
 
         let next = get_end(prev, dir, len);
@@ -67,7 +70,7 @@ fn shoelace_area(instructions: &[Instruction], vector_func: fn(&Instruction) -> 
     }
     perimeter.wrapping_add_signed(sum) / 2 + 1
 }
-pub fn solution_day_18_01(file_path: String) -> Option<u64> {
+pub fn solution_day_18_01(file_path: String) -> Option<usize> {
     let plan: Vec<Instruction> = fs::read_to_string(file_path)
         .expect("Invalid Input File.")
         .lines()
@@ -76,7 +79,7 @@ pub fn solution_day_18_01(file_path: String) -> Option<u64> {
     Some(shoelace_area(&plan, |i| i.get_vector()))
 }
 
-pub fn solution_day_18_02(file_path: String) -> Option<u64> {
+pub fn solution_day_18_02(file_path: String) -> Option<usize> {
     let plan: Vec<Instruction> = fs::read_to_string(file_path)
         .expect("Invalid Input File.")
         .lines()
