@@ -43,16 +43,6 @@ fn get_end(start: (isize, isize), dir: u8, len: usize) -> (isize, isize) {
     }
 }
 
-impl Instruction {
-    fn get_vector(&self) -> (u8, usize) {
-        (self.dir, self.len)
-    }
-
-    fn get_vector_from_color(&self) -> (u8, usize) {
-        ((self.c & 3) as u8, (self.c >> 4) as usize)
-    }
-}
-
 fn shoelace_area(
     instructions: &[Instruction],
     vector_func: fn(&Instruction) -> (u8, usize),
@@ -76,7 +66,7 @@ pub fn solution_day_18_01(file_path: String) -> Option<usize> {
         .lines()
         .map(|l| l.parse::<Instruction>().unwrap())
         .collect();
-    Some(shoelace_area(&plan, |i| i.get_vector()))
+    Some(shoelace_area(&plan, |i| (i.dir, i.len)))
 }
 
 pub fn solution_day_18_02(file_path: String) -> Option<usize> {
@@ -85,7 +75,7 @@ pub fn solution_day_18_02(file_path: String) -> Option<usize> {
         .lines()
         .map(|l| l.parse::<Instruction>().unwrap())
         .collect();
-    Some(shoelace_area(&plan, |i| i.get_vector_from_color()))
+    Some(shoelace_area(&plan, |i| ((i.c & 3) as u8, (i.c >> 4))))
 }
 
 #[cfg(test)]
