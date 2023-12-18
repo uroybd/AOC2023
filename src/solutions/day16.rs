@@ -69,33 +69,15 @@ impl std::str::FromStr for MirrorRoom {
 
 impl MirrorRoom {
     fn get_next_photon(&self, photon: &Photon) -> Option<Vec<Photon>> {
-        let (x, y) = photon.position;
         let new_pos = match photon.direction {
-            MovementDirection::Rightward => {
-                if x + 1 == self.width {
-                    return None;
-                }
-                (x + 1, y)
-            }
-            MovementDirection::LeftWard => {
-                if x == 0 {
-                    return None;
-                }
-                (x - 1, y)
-            }
-            MovementDirection::Upward => {
-                if y == 0 {
-                    return None;
-                }
-                (x, y - 1)
-            }
-            MovementDirection::Downward => {
-                if y + 1 == self.height {
-                    return None;
-                }
-                (x, y + 1)
-            }
+            MovementDirection::Rightward => (photon.position.0 + 1, photon.position.1),
+            MovementDirection::LeftWard => (photon.position.0 - 1, photon.position.1),
+            MovementDirection::Upward => (photon.position.0, photon.position.1 - 1),
+            MovementDirection::Downward => (photon.position.0, photon.position.1 + 1),
         };
+        if new_pos.0 < 0 || new_pos.0 >= self.width || new_pos.1 < 0 || new_pos.1 >= self.height {
+            return None;
+        }
         let tile = &self.room[new_pos.1 as usize][new_pos.0 as usize];
         let mut directions = vec![];
 
@@ -125,9 +107,6 @@ impl MirrorRoom {
                 }
                 dir => directions.push(dir.clone()),
             },
-        }
-        if directions.is_empty() {
-            return None;
         }
         Some(
             directions
