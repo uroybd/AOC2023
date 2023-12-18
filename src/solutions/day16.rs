@@ -143,7 +143,6 @@ impl MirrorRoom {
     fn find_photons(&self, starter: &Photon) -> usize {
         let mut available = vec![];
         let mut seen = HashSet::new();
-        let mut processed = vec![];
         if let Some(next_photons) = self.get_next_photon(starter) {
             available.extend(next_photons);
         }
@@ -152,7 +151,6 @@ impl MirrorRoom {
                 continue;
             }
             seen.insert(photon.clone());
-            processed.push(photon.clone());
             if let Some(next_photons) = self.get_next_photon(&photon) {
                 available.extend(next_photons);
             }

@@ -65,32 +65,36 @@ impl PartialEq for Record {
 impl Eq for Record {}
 
 impl Graph {
-    fn find_neighbors(&self, cursor: &Cursor, min_moves: usize, max_moves: usize) -> Vec<Cursor> {
-        let (x, y) = cursor.pos;
-        let mut result = vec![];
-        let directions = vec![(1, 0), (-1, 0), (0, 1), (0, -1)];
-        for dir in directions {
-            let mut moves_so_far = 1;
-            if dir == cursor.dir {
-                moves_so_far += cursor.con_moves;
-            }
-            if moves_so_far > max_moves || (-dir.0 == cursor.dir.0 && -dir.1 == cursor.dir.1) {
-                continue;
-            }
-            let (nx, ny) = (x as isize + dir.0, y as isize + dir.1);
-            if nx < 0 || ny < 0 || nx as usize >= self.width || ny as usize >= self.height {
-                continue;
-            }
-            if dir != cursor.dir && cursor.con_moves < min_moves {
-                continue;
-            }
-            result.push(Cursor {
-                pos: (nx as usize, ny as usize),
-                dir,
-                con_moves: moves_so_far,
-            });
-        }
-        result
+    fn find_neighbors<'a>(
+        &'a self,
+        cursor: &'a Cursor,
+        min_moves: usize,
+        max_moves: usize,
+    ) -> impl Iterator<Item = Cursor> + 'a {
+        [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            .into_iter()
+            .filter_map(move |dir| {
+                let mut consecutive_moves = 1;
+                if dir == cursor.dir {
+                    consecutive_moves += cursor.con_moves;
+                } else if cursor.con_moves < min_moves {
+                    return None;
+                }
+                if consecutive_moves > max_moves
+                    || (-dir.0 == cursor.dir.0 && -dir.1 == cursor.dir.1)
+                {
+                    return None;
+                }
+                let (nx, ny) = (cursor.pos.0 as isize + dir.0, cursor.pos.1 as isize + dir.1);
+                if nx < 0 || ny < 0 || nx as usize >= self.width || ny as usize >= self.height {
+                    return None;
+                }
+                Some(Cursor {
+                    pos: (nx as usize, ny as usize),
+                    dir,
+                    con_moves: consecutive_moves,
+                })
+            })
     }
 
     fn find_shortest(&self, min_moves: usize, max_moves: usize) -> usize {
