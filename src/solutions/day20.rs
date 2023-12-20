@@ -1,6 +1,9 @@
 // Advent of Code 2023 - Day 20
 
-use std::{collections::HashMap, fs};
+use std::{
+    collections::{HashMap, VecDeque},
+    fs,
+};
 
 use derive_deref::{Deref, DerefMut};
 
@@ -25,15 +28,15 @@ trait Module {
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 struct FlipFlop {
     name: String,
-    dests: Vec<String>,
+    destinations: Vec<String>,
     state: bool,
 }
 
 impl FlipFlop {
-    fn new(name: String, dests: Vec<String>) -> Self {
+    fn new(name: String, destinations: Vec<String>) -> Self {
         Self {
             name,
-            dests,
+            destinations,
             state: false,
         }
     }
@@ -46,7 +49,7 @@ impl Module for FlipFlop {
         }
         self.state = !self.state;
         Some(
-            self.dests
+            self.destinations
                 .iter()
                 .map(|d| Signal {
                     name: d.clone(),
@@ -57,7 +60,7 @@ impl Module for FlipFlop {
     }
 
     fn dest_contains(&self, name: &str) -> bool {
-        self.dests.contains(&name.to_string())
+        self.destinations.contains(&name.to_string())
     }
 
     fn get_name(&self) -> String {
@@ -69,11 +72,11 @@ impl Module for FlipFlop {
 struct Conjunction {
     name: String,
     inputs: HashMap<String, Pulse>,
-    dests: Vec<String>,
+    destinations: Vec<String>,
 }
 
 impl Conjunction {
-    fn new(name: String, input_keys: &[String], dests: &[String]) -> Self {
+    fn new(name: String, input_keys: &[String], destinations: &[String]) -> Self {
         let inputs = input_keys
             .iter()
             .map(|k| (k.clone(), Pulse::Low))
@@ -81,7 +84,7 @@ impl Conjunction {
         Self {
             name,
             inputs,
-            dests: dests.to_vec(),
+            destinations: destinations.to_vec(),
         }
     }
 }
@@ -96,7 +99,7 @@ impl Module for Conjunction {
             p = Pulse::High;
         }
         Some(
-            self.dests
+            self.destinations
                 .iter()
                 .map(|d| Signal {
                     name: d.clone(),
@@ -107,7 +110,7 @@ impl Module for Conjunction {
     }
 
     fn dest_contains(&self, name: &str) -> bool {
-        self.dests.contains(&name.to_string())
+        self.destinations.contains(&name.to_string())
     }
 
     fn get_name(&self) -> String {
@@ -118,19 +121,19 @@ impl Module for Conjunction {
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Broadcaster {
     name: String,
-    dests: Vec<String>,
+    destinations: Vec<String>,
 }
 
 impl Broadcaster {
-    fn new(name: String, dests: Vec<String>) -> Self {
-        Self { name, dests }
+    fn new(name: String, destinations: Vec<String>) -> Self {
+        Self { name, destinations }
     }
 }
 
 impl Module for Broadcaster {
     fn input(&mut self, input: &Signal) -> Option<Vec<Signal>> {
         Some(
-            self.dests
+            self.destinations
                 .iter()
                 .map(|d| Signal {
                     name: d.clone(),
@@ -141,7 +144,7 @@ impl Module for Broadcaster {
     }
 
     fn dest_contains(&self, name: &str) -> bool {
-        self.dests.contains(&name.to_string())
+        self.destinations.contains(&name.to_string())
     }
 
     fn get_name(&self) -> String {
@@ -192,22 +195,22 @@ impl std::str::FromStr for Circuit {
         let mut conjunctions = vec![];
         for line in s.lines() {
             let (src, dest) = line.split_once(" -> ").unwrap();
-            let dests = dest.split(", ").map(|x| x.to_string()).collect();
+            let destinations = dest.split(", ").map(|x| x.to_string()).collect();
             if src == "broadcaster" {
                 circuit.insert(
                     src.to_string(),
-                    Box::new(Broadcaster::new(src.to_string(), dests)),
+                    Box::new(Broadcaster::new(src.to_string(), destinations)),
                 );
             } else if src.starts_with('%') {
                 let k = src.trim_start_matches('%').to_string();
-                circuit.insert(k.clone(), Box::new(FlipFlop::new(k.clone(), dests)));
+                circuit.insert(k.clone(), Box::new(FlipFlop::new(k.clone(), destinations)));
             } else {
                 let k = src.trim_start_matches('&').to_string();
-                conjunctions.push((k, dests));
+                conjunctions.push((k, destinations));
             }
         }
         for con in conjunctions {
-            let (k, dests) = con;
+            let (k, destinations) = con;
             let input_keys = circuit
                 .iter()
                 .filter_map(|(key, v)| {
@@ -220,7 +223,7 @@ impl std::str::FromStr for Circuit {
                 .collect::<Vec<String>>();
             circuit.insert(
                 k.clone(),
-                Box::new(Conjunction::new(k, &input_keys, &dests)),
+                Box::new(Conjunction::new(k, &input_keys, &destinations)),
             );
         }
         circuit.insert(
@@ -235,37 +238,33 @@ impl Circuit {
     fn run(&mut self) -> (usize, usize) {
         let mut high_count = 0;
         let mut low_count = -1;
-        let mut current = vec![(
+        let mut queue = VecDeque::from(vec![(
             "button".to_string(),
             Signal {
                 name: "button".to_string(),
                 pulse: Pulse::Low,
             },
-        )];
+        )]);
 
-        while !current.is_empty() {
-            let mut next = vec![];
-            for (name, signal) in current {
-                match signal.pulse {
-                    Pulse::High => high_count += 1,
-                    Pulse::Low => low_count += 1,
-                }
+        while let Some((name, signal)) = queue.pop_front() {
+            match signal.pulse {
+                Pulse::High => high_count += 1,
+                Pulse::Low => low_count += 1,
+            }
 
-                if let Some(module) = self.get_mut(&name) {
-                    if let Some(outputs) = module.input(&signal) {
-                        for entry in outputs {
-                            next.push((
-                                entry.name.clone(),
-                                Signal {
-                                    name: module.get_name(),
-                                    pulse: entry.pulse,
-                                },
-                            ));
-                        }
+            if let Some(module) = self.get_mut(&name) {
+                if let Some(outputs) = module.input(&signal) {
+                    for entry in outputs {
+                        queue.push_back((
+                            entry.name.clone(),
+                            Signal {
+                                name: module.get_name(),
+                                pulse: entry.pulse,
+                            },
+                        ));
                     }
                 }
             }
-            current = next;
         }
         (high_count, (low_count as usize))
     }
@@ -289,42 +288,37 @@ impl Circuit {
         let mut cycle = 0;
         'mloop: loop {
             cycle += 1;
-            let mut current = vec![(
+            let mut queue = VecDeque::from(vec![(
                 "button".to_string(),
                 Signal {
                     name: "button".to_string(),
                     pulse: Pulse::Low,
                 },
-            )];
+            )]);
 
-            while !current.is_empty() {
-                let mut next = vec![];
-                for (name, signal) in current {
-                    if let Some(module) = self.get_mut(&name) {
-                        if leading_to_rx_setter.contains(&name)
-                            && signal.pulse == Pulse::Low
-                            && !cycles.contains_key(&name)
-                        {
-                            cycles.insert(name.clone(), cycle);
-                            if cycles.len() == leading_to_rx_setter.len() {
-                                break 'mloop;
-                            }
+            while let Some((name, signal)) = queue.pop_front() {
+                if let Some(module) = self.get_mut(&name) {
+                    if leading_to_rx_setter.contains(&name)
+                        && signal.pulse == Pulse::Low
+                        && !cycles.contains_key(&name)
+                    {
+                        cycles.insert(name.clone(), cycle);
+                        if cycles.len() == leading_to_rx_setter.len() {
+                            break 'mloop;
                         }
-                        if let Some(outputs) = module.input(&signal) {
-                            for entry in outputs {
-                                next.push((
-                                    entry.name.clone(),
-                                    Signal {
-                                        name: module.get_name(),
-                                        pulse: entry.pulse,
-                                    },
-                                ));
-                            }
+                    }
+                    if let Some(outputs) = module.input(&signal) {
+                        for entry in outputs {
+                            queue.push_back((
+                                entry.name.clone(),
+                                Signal {
+                                    name: module.get_name(),
+                                    pulse: entry.pulse,
+                                },
+                            ));
                         }
                     }
                 }
-
-                current = next;
             }
         }
 
