@@ -13,6 +13,8 @@ Currently I'm using:
 - [regex](https://crates.io/crates/regex) for regex
 - [rayon](https://crates.io/crates/rayon) for parallelism
 - [num](https://crates.io/crates/num) for mathematical operations
+- [derive_deref](https://crates.io/crates/derive_deref) because implementing deref is tediously trivial
+- [indexmap](https://lib.rs/crates/indexmap) because doing it by hand is tedious
 
 ## Credits
 Shamelessly stole and adapted [the scaffolding mechanism found here](https://github.com/fspoettel/advent-of-code-rust) to my need.
@@ -35,7 +37,7 @@ Shamelessly stole and adapted [the scaffolding mechanism found here](https://git
 | **Day 12** | 12.20ms | 588.90ms | 601.10ms |
 | **Day 13** | 482.00μs | 488.49μs | 970.49μs |
 | **Day 14** | 45.87μs | 27.08ms | 27.12ms |
-| **Day 15** | 51.50μs | 356.69μs | 408.19μs |
+| **Day 15** | 49.12μs | 393.33μs | 442.45μs |
 | **Day 16** | 1.90ms | 180.90ms | 182.80ms |
 | **Day 17** | 96.01ms | 245.32ms | 341.34ms |
 | **Day 18** | 47.37μs | 47.10μs | 94.47μs |

@@ -1,18 +1,11 @@
 // Advent of Code 2023 - Day 13
 
+use derive_deref::Deref;
 use rayon::prelude::*;
 use std::fs;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Deref)]
 struct Mirror(Vec<Vec<char>>);
-
-impl std::ops::Deref for Mirror {
-    type Target = Vec<Vec<char>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 #[derive(Debug, PartialEq, Eq)]
 struct ParseMirrorError;

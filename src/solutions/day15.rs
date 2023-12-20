@@ -2,6 +2,9 @@
 
 use std::{collections::HashMap, fs};
 
+use derive_deref::{Deref, DerefMut};
+use indexmap::IndexMap;
+
 fn get_hash(seq: &str) -> usize {
     let res = seq
         .chars()
@@ -32,21 +35,8 @@ impl std::str::FromStr for Operation {
     }
 }
 
-struct BoxArray(HashMap<usize, Vec<(String, usize)>>);
-
-impl std::ops::Deref for BoxArray {
-    type Target = HashMap<usize, Vec<(String, usize)>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for BoxArray {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
+#[derive(Deref, DerefMut)]
+struct BoxArray(HashMap<usize, IndexMap<String, usize>>);
 
 impl BoxArray {
     fn new() -> Self {
@@ -57,26 +47,13 @@ impl BoxArray {
         match op {
             Operation::Set((name, val)) => {
                 let hash = get_hash(&name);
-                if let Some(entry) = self.get_mut(&hash) {
-                    let mut replaced = false;
-                    for e in &mut *entry {
-                        if e.0 == name {
-                            e.1 = val;
-                            replaced = true;
-                            break;
-                        }
-                    }
-                    if !replaced {
-                        entry.push((name, val));
-                    }
-                } else {
-                    self.insert(hash, vec![(name, val)]);
-                }
+                let entry = self.entry(hash).or_default();
+                entry.insert(name, val);
             }
             Operation::Remove(name) => {
                 let hash = get_hash(&name);
                 if let Some(entry) = self.get_mut(&hash) {
-                    entry.retain(|(n, _)| n != &name);
+                    entry.shift_remove(&name);
                 }
             }
         }

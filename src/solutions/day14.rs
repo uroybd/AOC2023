@@ -5,22 +5,10 @@ use std::collections::HashMap;
 use std::fs;
 use std::hash::{Hash, Hasher};
 
-#[derive(Debug, Clone, Hash)]
+use derive_deref::{Deref, DerefMut};
+
+#[derive(Debug, Clone, Hash, Deref, DerefMut)]
 struct Platform(Vec<Vec<char>>);
-
-impl std::ops::Deref for Platform {
-    type Target = Vec<Vec<char>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for Platform {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 #[derive(Debug, PartialEq, Eq)]
 struct ParsePlatformError;

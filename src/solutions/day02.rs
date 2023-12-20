@@ -1,14 +1,9 @@
 use std::fs;
+
+use derive_deref::Deref;
 // Advent of Code 2023 - Day 02
+#[derive(Deref)]
 struct Game([usize; 3]);
-
-impl std::ops::Deref for Game {
-    type Target = [usize; 3];
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 #[derive(Debug, PartialEq, Eq)]
 struct ParseGameError;

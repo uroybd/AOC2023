@@ -2,16 +2,10 @@
 
 use std::{collections::HashMap, fs};
 
-#[derive(Debug, Clone)]
+use derive_deref::{Deref, DerefMut};
+
+#[derive(Debug, Clone, Deref)]
 struct Part(HashMap<char, usize>);
-
-impl std::ops::Deref for Part {
-    type Target = HashMap<char, usize>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 #[derive(Debug, Eq, PartialEq)]
 struct ParsePartError;
@@ -37,22 +31,8 @@ impl Part {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Deref, DerefMut)]
 struct PartRange(HashMap<char, (usize, usize)>);
-
-impl std::ops::Deref for PartRange {
-    type Target = HashMap<char, (usize, usize)>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for PartRange {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 impl PartRange {
     fn new_with_range(start: usize, end: usize) -> Self {
