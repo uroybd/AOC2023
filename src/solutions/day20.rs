@@ -8,21 +8,15 @@ use std::{
 use derive_deref::{Deref, DerefMut};
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
-enum Pulse {
-    Low,
-    High,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 struct Signal {
     name: String,
-    pulse: Pulse,
+    pulse: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum ModuleType {
     FlipFlop(bool),
-    Conjunction(HashMap<String, Pulse>),
+    Conjunction(HashMap<String, bool>),
     Broadcaster,
     Button,
 }
@@ -36,35 +30,27 @@ struct Module {
 
 impl Module {
     fn input(&mut self, inp: &Signal) -> Option<Vec<Signal>> {
-        let output = match self.module_type {
+        let pulse = match self.module_type {
             ModuleType::FlipFlop(ref mut state) => {
-                if inp.pulse == Pulse::High {
+                if inp.pulse {
                     return None;
                 }
                 *state = !*state;
-                if *state {
-                    Pulse::High
-                } else {
-                    Pulse::Low
-                }
+                *state
             }
             ModuleType::Conjunction(ref mut inputs) => {
-                inputs.insert(inp.name.clone(), inp.pulse.clone());
-                if inputs.values().any(|p| p == &Pulse::Low) {
-                    Pulse::High
-                } else {
-                    Pulse::Low
-                }
+                inputs.insert(inp.name.clone(), inp.pulse);
+                inputs.values().any(|p| !p)
             }
-            ModuleType::Broadcaster => inp.pulse.clone(),
-            ModuleType::Button => Pulse::Low,
+            ModuleType::Broadcaster => inp.pulse,
+            ModuleType::Button => false,
         };
         Some(
             self.destinations
                 .iter()
                 .map(|d| Signal {
                     name: d.clone(),
-                    pulse: output.clone(),
+                    pulse,
                 })
                 .collect(),
         )
@@ -86,7 +72,7 @@ impl Module {
                     }
                 })
                 .for_each(|v| {
-                    inputs.insert(v, Pulse::Low);
+                    inputs.insert(v, false);
                 });
         }
     }
@@ -154,14 +140,14 @@ impl Circuit {
             "button".to_string(),
             Signal {
                 name: "button".to_string(),
-                pulse: Pulse::Low,
+                pulse: false,
             },
         )]);
 
         while let Some((name, signal)) = queue.pop_front() {
             match signal.pulse {
-                Pulse::High => high_count += 1,
-                Pulse::Low => low_count += 1,
+                true => high_count += 1,
+                false => low_count += 1,
             }
 
             if let Some(module) = self.get_mut(&name) {
@@ -204,14 +190,14 @@ impl Circuit {
                 "button".to_string(),
                 Signal {
                     name: "button".to_string(),
-                    pulse: Pulse::Low,
+                    pulse: false,
                 },
             )]);
 
             while let Some((name, signal)) = queue.pop_front() {
                 if let Some(module) = self.get_mut(&name) {
                     if leading_to_rx_setter.contains(&name)
-                        && signal.pulse == Pulse::Low
+                        && !signal.pulse
                         && !cycles.contains_key(&name)
                     {
                         cycles.insert(name.clone(), cycle);
