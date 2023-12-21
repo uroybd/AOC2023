@@ -73,6 +73,47 @@ impl Module {
     fn dest_contains(&self, name: &str) -> bool {
         self.destinations.contains(&name.to_string())
     }
+
+    fn wire_up(&mut self, circuit: &Circuit) {
+        if let ModuleType::Conjunction(ref mut inputs) = self.module_type {
+            circuit
+                .iter()
+                .filter_map(|(key, v)| {
+                    if v.dest_contains(&self.name) {
+                        Some(key.clone())
+                    } else {
+                        None
+                    }
+                })
+                .for_each(|v| {
+                    inputs.insert(v, Pulse::Low);
+                });
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct ParseModuleError;
+
+impl std::str::FromStr for Module {
+    type Err = ParseModuleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (src, dest) = s.split_once(" -> ").unwrap();
+        let destinations: Vec<String> = dest.split(", ").map(|x| x.to_string()).collect();
+        let name_parts = src.split_at(1);
+        let (module_type, name) = match name_parts {
+            ("&", name) => (ModuleType::Conjunction(HashMap::new()), name),
+            ("%", name) => (ModuleType::FlipFlop(false), name),
+            ("b", _) => (ModuleType::Broadcaster, "broadcaster"),
+            _ => panic!("Invalid module type."),
+        };
+        Ok(Module {
+            name: name.to_string(),
+            module_type,
+            destinations,
+        })
+    }
 }
 
 #[derive(Deref, DerefMut)]
@@ -85,51 +126,22 @@ impl std::str::FromStr for Circuit {
     type Err = ParseCircuitError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut circuit = Self(HashMap::new());
-        let mut instructions: Vec<&str> = s.lines().collect();
-        instructions.sort();
-        instructions.reverse();
-        while let Some(ins) = instructions.pop() {
-            let (src, dest) = ins.split_once(" -> ").unwrap();
-            let destinations: Vec<String> = dest.split(", ").map(|x| x.to_string()).collect();
-            let name_parts = src.split_at(1);
-            let (module_type, name) = match name_parts {
-                ("&", name) => (
-                    ModuleType::Conjunction(HashMap::from_iter(
-                        circuit
-                            .iter()
-                            .filter_map(|(key, v)| {
-                                if v.dest_contains(name) {
-                                    Some(key.clone())
-                                } else {
-                                    None
-                                }
-                            })
-                            .map(|i| (i, Pulse::Low)),
-                    )),
-                    name,
-                ),
-                ("%", name) => (ModuleType::FlipFlop(false), name),
-                ("b", _) => (ModuleType::Broadcaster, "broadcaster"),
-                _ => panic!("Invalid module type."),
-            };
-            circuit.insert(
-                name.to_string(),
-                Module {
-                    name: name.to_string(),
-                    module_type,
-                    destinations,
-                },
-            );
-        }
-        circuit.insert(
+        let mut circuit = Self(HashMap::from([(
             "button".to_string(),
             Module {
                 name: "button".to_string(),
                 module_type: ModuleType::Button,
                 destinations: vec!["broadcaster".to_string()],
             },
-        );
+        )]));
+        let mut instructions: Vec<&str> = s.lines().collect();
+        instructions.sort();
+        instructions.reverse();
+        while let Some(ins) = instructions.pop() {
+            let mut module = ins.parse::<Module>().unwrap();
+            module.wire_up(&circuit);
+            circuit.insert(module.name.clone(), module);
+        }
         Ok(circuit)
     }
 }
